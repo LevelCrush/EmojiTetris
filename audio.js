@@ -1,6 +1,7 @@
 // YouTube Player Management
 let player;
 let isPlayerReady = false;
+window.player = null; // Make player globally accessible
 let currentVolume = 50;
 let isMuted = false;
 let currentVideoIndex = 0;
@@ -76,6 +77,7 @@ function onYouTubeIframeAPIReady() {
 
 function onPlayerReady(event) {
     isPlayerReady = true;
+    window.player = player; // Make player globally accessible
     player.setVolume(currentVolume);
     
     // Show initial video info

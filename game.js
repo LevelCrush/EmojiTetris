@@ -273,6 +273,15 @@ class EmojiTetris {
         document.getElementById('start-screen').classList.add('hidden');
         document.querySelector('.game-container').classList.remove('hidden');
         
+        // Start YouTube video
+        if (window.audioManager && window.audioManager.isReady()) {
+            // Unmute and play
+            if (window.player) {
+                window.player.unMute();
+                window.player.playVideo();
+            }
+        }
+        
         // Fill next pieces queue
         for (let i = 0; i < 4; i++) {
             this.nextPieces.push(this.createPiece());
@@ -482,7 +491,8 @@ class EmojiTetris {
         this.heldPiece = {
             shape: temp.shape,
             matrix: temp.matrix,
-            emoji: temp.emoji
+            emoji: temp.emoji,
+            isRainbow: temp.isRainbow
         };
         
         this.canHold = false;
@@ -894,10 +904,17 @@ class EmojiTetris {
                         const blockX = offsetX + x * scale;
                         const blockY = offsetY + y * scale;
                         
+                        // Handle rainbow pieces
+                        let emojiIndex = this.heldPiece.emoji;
+                        if (this.heldPiece.isRainbow || this.heldPiece.emoji === 'rainbow') {
+                            const time = Date.now() / 500; // Change every 500ms
+                            emojiIndex = Math.floor(time + x + y) % this.emojis.length;
+                        }
+                        
                         // Draw emoji
-                        if (this.emojiImages[this.heldPiece.emoji]) {
+                        if (this.emojiImages[emojiIndex]) {
                             this.holdCtx.drawImage(
-                                this.emojiImages[this.heldPiece.emoji],
+                                this.emojiImages[emojiIndex],
                                 blockX,
                                 blockY,
                                 scale,
@@ -908,7 +925,7 @@ class EmojiTetris {
                             this.holdCtx.textAlign = 'center';
                             this.holdCtx.textBaseline = 'middle';
                             this.holdCtx.fillText(
-                                this.emojis[this.heldPiece.emoji],
+                                this.emojis[emojiIndex],
                                 blockX + scale / 2,
                                 blockY + scale / 2
                             );
@@ -942,10 +959,17 @@ class EmojiTetris {
                         const blockX = offsetX + x * scale;
                         const blockY = yOffset + y * scale;
                         
+                        // Handle rainbow pieces
+                        let emojiIndex = piece.emoji;
+                        if (piece.isRainbow || piece.emoji === 'rainbow') {
+                            const time = Date.now() / 500; // Change every 500ms
+                            emojiIndex = Math.floor(time + x + y) % this.emojis.length;
+                        }
+                        
                         // Draw emoji
-                        if (this.emojiImages[piece.emoji]) {
+                        if (this.emojiImages[emojiIndex]) {
                             this.nextCtx.drawImage(
-                                this.emojiImages[piece.emoji],
+                                this.emojiImages[emojiIndex],
                                 blockX,
                                 blockY,
                                 scale,
@@ -956,7 +980,7 @@ class EmojiTetris {
                             this.nextCtx.textAlign = 'center';
                             this.nextCtx.textBaseline = 'middle';
                             this.nextCtx.fillText(
-                                this.emojis[piece.emoji],
+                                this.emojis[emojiIndex],
                                 blockX + scale / 2,
                                 blockY + scale / 2
                             );
