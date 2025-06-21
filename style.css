@@ -218,38 +218,156 @@ body {
     pointer-events: none;
 }
 
+/* Start Screen */
+.start-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 3000;
+}
+
+.start-screen.hidden {
+    display: none;
+}
+
+.start-content {
+    text-align: center;
+}
+
+.start-content h1 {
+    font-size: 48px;
+    margin-bottom: 40px;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+    animation: pulse 2s infinite;
+}
+
+.play-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    padding: 20px 40px;
+    border-radius: 50px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: all 0.3s;
+    display: block;
+    width: 250px;
+    margin: 0 auto 20px;
+}
+
+.play-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+}
+
+.menu-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    font-size: 16px;
+    padding: 12px 24px;
+    border-radius: 30px;
+    cursor: pointer;
+    margin: 10px;
+    transition: all 0.3s;
+}
+
+.menu-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+/* Controls Modal */
+.controls-section {
+    margin: 20px 0;
+    text-align: left;
+}
+
+.controls-section h3 {
+    color: #667eea;
+    margin-bottom: 10px;
+}
+
+.control-item {
+    padding: 5px 0;
+    font-size: 16px;
+}
+
+.modal-btn {
+    background: rgba(102, 126, 234, 0.8);
+    border: none;
+    color: #fff;
+    padding: 10px 30px;
+    border-radius: 20px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.3s;
+}
+
+.modal-btn:hover {
+    background: rgba(102, 126, 234, 1);
+}
+
 /* Mobile Controls */
 .mobile-controls {
     display: none;
-    position: absolute;
-    bottom: -120px;
+    position: fixed;
+    bottom: 80px;
     left: 50%;
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.8);
     border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 10px;
+    border-radius: 20px;
     padding: 10px;
+    z-index: 1000;
+    gap: 10px;
 }
 
-.control-row {
-    display: flex;
+.mobile-controls-top {
+    display: none;
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    padding: 10px;
+    z-index: 1000;
     gap: 10px;
-    margin-bottom: 10px;
 }
 
 .control-btn {
     background: rgba(255, 255, 255, 0.1);
     border: 2px solid rgba(255, 255, 255, 0.5);
     color: #fff;
-    font-size: 20px;
+    font-size: 24px;
     padding: 15px 20px;
-    border-radius: 8px;
+    border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s;
-    min-width: 60px;
+    min-width: 65px;
 }
 
-.control-btn:active {
+.control-btn-small {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    color: #fff;
+    font-size: 16px;
+    padding: 10px 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.control-btn:active, .control-btn-small:active {
     background: rgba(255, 255, 255, 0.3);
     transform: scale(0.95);
 }
@@ -438,7 +556,9 @@ body {
 @media (max-width: 768px) {
     .game-container {
         flex-direction: column;
-        gap: 20px;
+        gap: 10px;
+        padding: 10px;
+        min-height: calc(100vh - 20px);
     }
     
     .side-panel {
@@ -446,7 +566,11 @@ body {
     }
     
     .mobile-controls {
-        display: block;
+        display: flex;
+    }
+    
+    .mobile-controls-top {
+        display: flex;
     }
     
     #game-canvas, #particle-canvas {
@@ -455,11 +579,47 @@ body {
     }
     
     .game-info {
-        gap: 15px;
-        padding: 10px 20px;
+        bottom: 10px;
+        gap: 10px;
+        padding: 8px 15px;
+        font-size: 12px;
     }
     
     .value {
-        font-size: 18px;
+        font-size: 16px;
+    }
+    
+    .label {
+        font-size: 10px;
+    }
+    
+    .start-content h1 {
+        font-size: 36px;
+    }
+    
+    .play-btn {
+        font-size: 20px;
+        padding: 15px 30px;
+    }
+    
+    .volume-control {
+        top: 10px;
+        right: 10px;
+        padding: 8px 12px;
+    }
+    
+    .settings-panel {
+        top: 10px;
+        left: 10px;
+    }
+    
+    .settings-toggle {
+        padding: 8px;
+        font-size: 20px;
+    }
+    
+    /* Hide status indicators on mobile to save space */
+    .emoji-status, .sound-status, .video-info {
+        display: none;
     }
 }

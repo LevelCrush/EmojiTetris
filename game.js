@@ -62,6 +62,9 @@ class EmojiTetris {
         // Mobile detection
         this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         
+        // Game started flag
+        this.gameStarted = false;
+        
         // Initialize
         this.init();
     }
@@ -246,6 +249,30 @@ class EmojiTetris {
         // Update high score display
         document.getElementById('high-score').textContent = this.highScore;
         
+        // UI event listeners
+        document.getElementById('play-btn').addEventListener('click', () => this.startGame());
+        document.getElementById('restart-btn').addEventListener('click', () => this.restart());
+        document.getElementById('resume-btn').addEventListener('click', () => this.togglePause());
+        document.getElementById('controls-btn').addEventListener('click', () => this.showControls());
+        document.getElementById('close-controls').addEventListener('click', () => this.hideControls());
+        document.getElementById('settings-btn').addEventListener('click', () => this.showSettings());
+        
+        // Make game instance globally available
+        window.gameInstance = this;
+        
+        // Draw empty board
+        this.draw();
+    }
+    
+    startGame() {
+        if (this.gameStarted) return;
+        
+        this.gameStarted = true;
+        
+        // Hide start screen
+        document.getElementById('start-screen').classList.add('hidden');
+        document.querySelector('.game-container').classList.remove('hidden');
+        
         // Fill next pieces queue
         for (let i = 0; i < 4; i++) {
             this.nextPieces.push(this.createPiece());
@@ -261,13 +288,18 @@ class EmojiTetris {
         // Use a consistent game loop timing
         this.gameLoopBound = this.gameLoop.bind(this);
         requestAnimationFrame(this.gameLoopBound);
-        
-        // UI event listeners
-        document.getElementById('restart-btn').addEventListener('click', () => this.restart());
-        document.getElementById('resume-btn').addEventListener('click', () => this.togglePause());
-        
-        // Make game instance globally available
-        window.gameInstance = this;
+    }
+    
+    showControls() {
+        document.getElementById('controls-modal').classList.remove('hidden');
+    }
+    
+    hideControls() {
+        document.getElementById('controls-modal').classList.add('hidden');
+    }
+    
+    showSettings() {
+        document.getElementById('settings-content').classList.remove('hidden');
     }
     
     createPiece() {
@@ -616,6 +648,7 @@ class EmojiTetris {
         this.nextPieces = [];
         this.dropAccumulator = 0;
         this.lastTime = 0;
+        this.piecesSpawned = 0;
         
         // Update UI
         this.updateScore();
@@ -625,11 +658,20 @@ class EmojiTetris {
         // Reset emoji usage tracking
         this.emojiUsageCount = new Array(this.emojis.length).fill(0);
         
+        // Clear canvases
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.holdCtx.clearRect(0, 0, this.holdCanvas.width, this.holdCanvas.height);
+        this.nextCtx.clearRect(0, 0, this.nextCanvas.width, this.nextCanvas.height);
+        
         // Reset game
         for (let i = 0; i < 4; i++) {
             this.nextPieces.push(this.createPiece());
         }
         this.spawnPiece();
+        
+        // Redraw
+        this.draw();
+        this.drawNext();
     }
     
     gameLoop(currentTime) {
@@ -722,7 +764,9 @@ class EmojiTetris {
         }
         
         // Draw ghost piece
-        this.drawGhost();
+        if (this.currentPiece) {
+            this.drawGhost();
+        }
         
         // Draw current piece
         if (this.currentPiece) {

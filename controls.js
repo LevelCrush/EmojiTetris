@@ -53,8 +53,8 @@ class Controls {
         canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));
         canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
         
-        // Mobile control buttons
-        document.querySelectorAll('.control-btn').forEach(btn => {
+        // Mobile control buttons (both regular and small)
+        document.querySelectorAll('.control-btn, .control-btn-small').forEach(btn => {
             btn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 this.handleMobileButton(btn.dataset.action, true);

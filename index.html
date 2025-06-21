@@ -43,8 +43,48 @@
         <span id="volume-display">50%</span>
     </div>
 
+    <!-- Start Screen -->
+    <div id="start-screen" class="start-screen">
+        <div class="start-content">
+            <h1>🎮 Emoji Tetris 🎮</h1>
+            <button id="play-btn" class="play-btn">Play Game</button>
+            <button id="controls-btn" class="menu-btn">View Controls</button>
+            <button id="settings-btn" class="menu-btn">Settings</button>
+        </div>
+    </div>
+
+    <!-- Controls Display -->
+    <div id="controls-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Game Controls</h2>
+            <div class="controls-section">
+                <h3>Keyboard</h3>
+                <div class="control-item">← → : Move left/right</div>
+                <div class="control-item">↓ : Soft drop</div>
+                <div class="control-item">↑ / Space : Rotate</div>
+                <div class="control-item">Shift : Hold piece</div>
+                <div class="control-item">P : Pause</div>
+            </div>
+            <div class="controls-section">
+                <h3>Mouse/Touch</h3>
+                <div class="control-item">Tap sides : Move</div>
+                <div class="control-item">Tap center : Rotate</div>
+                <div class="control-item">Swipe down : Soft drop</div>
+                <div class="control-item">Swipe up : Hard drop</div>
+            </div>
+            <button id="close-controls" class="modal-btn">Close</button>
+        </div>
+    </div>
+
     <!-- Game Container -->
-    <div class="game-container">
+    <div class="game-container hidden">
+        <!-- Mobile Controls (Top) -->
+        <div id="mobile-controls-top" class="mobile-controls-top">
+            <button class="control-btn-small" data-action="pause">⏸️</button>
+            <button class="control-btn-small" data-action="hold">HOLD</button>
+            <button class="control-btn-small" data-action="rotate">↻</button>
+        </div>
+
         <!-- Hold Piece Display -->
         <div class="side-panel left">
             <h3>HOLD</h3>
@@ -56,18 +96,12 @@
             <canvas id="game-canvas" width="300" height="600"></canvas>
             <canvas id="particle-canvas" width="300" height="600"></canvas>
             
-            <!-- Mobile Controls -->
+            <!-- Mobile Controls (Bottom) -->
             <div id="mobile-controls" class="mobile-controls">
-                <div class="control-row">
-                    <button class="control-btn" data-action="rotate">↻</button>
-                    <button class="control-btn" data-action="hold">HOLD</button>
-                    <button class="control-btn" data-action="drop">⬇️</button>
-                </div>
-                <div class="control-row">
-                    <button class="control-btn" data-action="left">⬅️</button>
-                    <button class="control-btn" data-action="down">⬇️</button>
-                    <button class="control-btn" data-action="right">➡️</button>
-                </div>
+                <button class="control-btn" data-action="left">⬅️</button>
+                <button class="control-btn" data-action="down">⬇️</button>
+                <button class="control-btn" data-action="right">➡️</button>
+                <button class="control-btn" data-action="drop">⏬</button>
             </div>
         </div>
 
