@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Tetris</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.youtube.com/iframe_api"></script>
+</head>
+<body>
+    <!-- YouTube Background -->
+    <div id="youtube-background">
+        <div id="youtube-player"></div>
+        <div class="video-overlay"></div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div id="settings-panel" class="settings-panel">
+        <button id="settings-toggle" class="settings-toggle">⚙️</button>
+        <div id="settings-content" class="settings-content hidden">
+            <h3>Settings</h3>
+            <div class="settings-group">
+                <label for="youtube-url">YouTube URL/Playlist:</label>
+                <input type="text" id="youtube-url" placeholder="Enter YouTube URL or Playlist ID">
+                <button id="apply-video">Apply</button>
+            </div>
+            <div class="settings-group">
+                <label>Default Playlists:</label>
+                <button class="playlist-btn" data-playlist="PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPboYG">Tetris Remixes</button>
+                <button class="playlist-btn" data-playlist="PLFgquLnL59alCl_2TQvOiD5Vgm1hCaGSI">Gaming Music</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Volume Control -->
+    <div id="volume-control" class="volume-control">
+        <button id="mute-toggle">🔊</button>
+        <input type="range" id="volume-slider" min="0" max="100" value="50">
+        <span id="volume-display">50%</span>
+    </div>
+
+    <!-- Game Container -->
+    <div class="game-container">
+        <!-- Hold Piece Display -->
+        <div class="side-panel left">
+            <h3>HOLD</h3>
+            <canvas id="hold-canvas" width="120" height="120"></canvas>
+        </div>
+
+        <!-- Main Game Area -->
+        <div class="main-game">
+            <canvas id="game-canvas" width="300" height="600"></canvas>
+            <canvas id="particle-canvas" width="300" height="600"></canvas>
+            
+            <!-- Mobile Controls -->
+            <div id="mobile-controls" class="mobile-controls">
+                <div class="control-row">
+                    <button class="control-btn" data-action="rotate">↻</button>
+                    <button class="control-btn" data-action="hold">HOLD</button>
+                    <button class="control-btn" data-action="drop">⬇️</button>
+                </div>
+                <div class="control-row">
+                    <button class="control-btn" data-action="left">⬅️</button>
+                    <button class="control-btn" data-action="down">⬇️</button>
+                    <button class="control-btn" data-action="right">➡️</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Pieces Display -->
+        <div class="side-panel right">
+            <h3>NEXT</h3>
+            <canvas id="next-canvas" width="120" height="360"></canvas>
+        </div>
+    </div>
+
+    <!-- Game Info -->
+    <div class="game-info">
+        <div class="info-item">
+            <span class="label">SCORE</span>
+            <span id="score" class="value">0</span>
+        </div>
+        <div class="info-item">
+            <span class="label">LEVEL</span>
+            <span id="level" class="value">1</span>
+        </div>
+        <div class="info-item">
+            <span class="label">LINES</span>
+            <span id="lines" class="value">0</span>
+        </div>
+        <div class="info-item">
+            <span class="label">HIGH SCORE</span>
+            <span id="high-score" class="value">0</span>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="game-over-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>GAME OVER</h2>
+            <p>Final Score: <span id="final-score">0</span></p>
+            <p>Level: <span id="final-level">1</span></p>
+            <p>Lines: <span id="final-lines">0</span></p>
+            <button id="restart-btn">Play Again</button>
+        </div>
+    </div>
+
+    <!-- Pause Modal -->
+    <div id="pause-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>PAUSED</h2>
+            <p>Press P or click Resume to continue</p>
+            <button id="resume-btn">Resume</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="audio.js"></script>
+    <script src="particles.js"></script>
+    <script src="controls.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

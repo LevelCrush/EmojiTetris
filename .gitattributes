@@ -1,0 +1,6 @@
+# Git LFS tracking for emoji images
+emojis/*.png filter=lfs diff=lfs merge=lfs -text
+emojis/*.gif filter=lfs diff=lfs merge=lfs -text
+emojis/*.jpg filter=lfs diff=lfs merge=lfs -text
+emojis/*.jpeg filter=lfs diff=lfs merge=lfs -text
+emojis/*.webp filter=lfs diff=lfs merge=lfs -text
