@@ -43,6 +43,7 @@ Edit `.env` and add your Discord bot token and guild ID:
 ```
 DISCORD_BOT_TOKEN=your_actual_bot_token
 DISCORD_GUILD_ID=your_actual_guild_id
+USE_BASE64=true  # Required for GitHub Pages!
 ```
 
 Then run the emoji fetcher:
@@ -50,15 +51,9 @@ Then run the emoji fetcher:
 npm run fetch-emojis
 ```
 
-### 2. Initialize Git LFS
+**Important for GitHub Pages:** The `USE_BASE64=true` option embeds the emoji images directly into the `manifest.json` file as base64 data URLs. This allows the emojis to work on GitHub Pages without Git LFS.
 
-```bash
-git lfs install
-git lfs track "emojis/*.png"
-git lfs track "emojis/*.gif"
-```
-
-### 3. Deploy to GitHub Pages
+### 2. Deploy to GitHub Pages
 
 1. Push the repository to GitHub
 2. Enable GitHub Pages in repository settings

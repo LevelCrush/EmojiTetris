@@ -96,23 +96,31 @@ class EmojiTetris {
         // Update status
         this.updateEmojiStatus(`Loading ${emojiCount} Discord emojis...`);
         
-        manifest.emojis.forEach((emoji, index) => {
-            if (index < 7) { // Only need 7 emojis for Tetris pieces
+        manifest.emojis.forEach((emoji) => {
+            if (emoji.index !== undefined && emoji.index < 7) {
                 const img = new Image();
-                img.src = `emojis/${emoji.filename}`;
+                
+                // Use base64 data URL if available, otherwise load from file
+                if (emoji.dataUrl) {
+                    img.src = emoji.dataUrl;
+                } else {
+                    img.src = `emojis/${emoji.filename}`;
+                }
+                
                 img.onload = () => {
-                    this.emojiImages[index] = img;
+                    this.emojiImages[emoji.index] = img;
                     loadedCount++;
                     
                     if (loadedCount === emojiCount) {
-                        this.updateEmojiStatus(`Loaded ${emojiCount} Discord emojis!`, 'success');
+                        const mode = manifest.useBase64 ? ' (base64 mode)' : '';
+                        this.updateEmojiStatus(`Loaded ${emojiCount} Discord emojis!${mode}`, 'success');
                         setTimeout(() => {
                             document.getElementById('emoji-status').classList.add('hidden');
                         }, 3000);
                     }
                 };
                 img.onerror = () => {
-                    console.error(`Failed to load emoji: ${emoji.filename}`);
+                    console.error(`Failed to load emoji: ${emoji.name}`);
                     loadedCount++;
                     
                     if (loadedCount === emojiCount) {

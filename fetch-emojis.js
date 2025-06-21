@@ -11,6 +11,7 @@ const path = require('path');
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN || 'YOUR_BOT_TOKEN_HERE';
 const GUILD_ID = process.env.DISCORD_GUILD_ID || 'YOUR_GUILD_ID_HERE';
 const OUTPUT_DIR = path.join(__dirname, 'emojis');
+const USE_BASE64 = process.env.USE_BASE64 === 'true' || false;
 
 // Ensure output directory exists
 if (!fs.existsSync(OUTPUT_DIR)) {
@@ -25,16 +26,26 @@ const client = new Client({
 // Function to download emoji
 function downloadEmoji(url, filename) {
     return new Promise((resolve, reject) => {
-        const file = fs.createWriteStream(path.join(OUTPUT_DIR, filename));
         https.get(url, (response) => {
-            response.pipe(file);
-            file.on('finish', () => {
-                file.close();
-                console.log(`Downloaded: ${filename}`);
-                resolve();
+            const chunks = [];
+            response.on('data', (chunk) => chunks.push(chunk));
+            response.on('end', () => {
+                const buffer = Buffer.concat(chunks);
+                
+                if (USE_BASE64) {
+                    // Return base64 data URL
+                    const base64 = buffer.toString('base64');
+                    const mimeType = filename.endsWith('.gif') ? 'image/gif' : 'image/png';
+                    const dataUrl = `data:${mimeType};base64,${base64}`;
+                    resolve({ dataUrl, buffer });
+                } else {
+                    // Save file normally
+                    fs.writeFileSync(path.join(OUTPUT_DIR, filename), buffer);
+                    console.log(`Downloaded: ${filename}`);
+                    resolve({ buffer });
+                }
             });
         }).on('error', (err) => {
-            fs.unlink(path.join(OUTPUT_DIR, filename), () => {});
             reject(err);
         });
     });
@@ -66,24 +77,38 @@ async function fetchEmojis() {
             emojis: [],
             fetchedAt: new Date().toISOString(),
             guildName: guild.name,
-            guildId: guild.id
+            guildId: guild.id,
+            useBase64: USE_BASE64
         };
 
         // Download each emoji
+        let index = 0;
         for (const [id, emoji] of emojis) {
+            if (index >= 7) break; // Only need 7 emojis for Tetris
+            
             const extension = emoji.animated ? 'gif' : 'png';
             const filename = `${emoji.name}_${id}.${extension}`;
             const url = emoji.url;
 
             try {
-                await downloadEmoji(url, filename);
-                manifest.emojis.push({
+                const result = await downloadEmoji(url, filename);
+                
+                const emojiData = {
                     id: id,
                     name: emoji.name,
                     filename: filename,
                     animated: emoji.animated,
-                    url: url
-                });
+                    url: url,
+                    index: index
+                };
+                
+                if (USE_BASE64) {
+                    emojiData.dataUrl = result.dataUrl;
+                    console.log(`Converted ${emoji.name} to base64`);
+                }
+                
+                manifest.emojis.push(emojiData);
+                index++;
             } catch (error) {
                 console.error(`Failed to download ${emoji.name}: ${error.message}`);
             }
@@ -99,6 +124,11 @@ async function fetchEmojis() {
         // Disconnect client
         client.destroy();
         console.log('Done! Emojis saved to:', OUTPUT_DIR);
+        
+        if (USE_BASE64) {
+            console.log('\n✨ Base64 mode enabled - emojis embedded in manifest.json');
+            console.log('This mode works with GitHub Pages without Git LFS!');
+        }
 
     } catch (error) {
         console.error('Error:', error.message);
@@ -124,6 +154,7 @@ if (DISCORD_BOT_TOKEN === 'YOUR_BOT_TOKEN_HERE') {
     console.error('\nOption 1: Create a .env file with:');
     console.error('DISCORD_BOT_TOKEN=your_bot_token');
     console.error('DISCORD_GUILD_ID=your_guild_id');
+    console.error('USE_BASE64=true  # Optional: for GitHub Pages without Git LFS');
     console.error('\nOption 2: Run with environment variables:');
     console.error('DISCORD_BOT_TOKEN=your_token DISCORD_GUILD_ID=your_guild_id npm run fetch-emojis');
     process.exit(1);
