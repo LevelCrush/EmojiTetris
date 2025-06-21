@@ -14,11 +14,16 @@ A fun Tetris game that uses Discord emojis as game pieces, with YouTube backgrou
   - Volume controls with mute toggle
   - Default curated playlists included
 
+- 🔊 **Discord Soundboard Integration**
+  - Plays random sounds from your server's soundboard when clearing lines
+  - Shows sound name when played
+  - Respects game volume settings
+
 - ✨ **Particle Effects**
-  - Single line: Sparkle burst
-  - Double line: Fireworks with trails
-  - Triple line: Rainbow explosion
-  - Tetris (4 lines): Epic multi-layered fireworks with screen shake
+  - Single line: Sparkle burst + sound effect
+  - Double line: Fireworks with trails + sound effect
+  - Triple line: Rainbow explosion + sound effect
+  - Tetris (4 lines): Epic multi-layered fireworks with screen shake + sound effect
 
 - 😀 **Discord Emoji Integration**
   - Uses your Discord server's custom emojis as game pieces
@@ -27,7 +32,7 @@ A fun Tetris game that uses Discord emojis as game pieces, with YouTube backgrou
 
 ## Setup
 
-### 1. Fetch Discord Emojis
+### 1. Fetch Discord Emojis and Sounds
 
 First, install dependencies:
 ```bash
@@ -46,12 +51,12 @@ DISCORD_GUILD_ID=your_actual_guild_id
 USE_BASE64=true  # Required for GitHub Pages!
 ```
 
-Then run the emoji fetcher:
+Then run the emoji fetcher (this will fetch both emojis AND soundboard sounds):
 ```bash
 npm run fetch-emojis
 ```
 
-**Important for GitHub Pages:** The `USE_BASE64=true` option embeds the emoji images directly into the `manifest.json` file as base64 data URLs. This allows the emojis to work on GitHub Pages without Git LFS.
+**Important for GitHub Pages:** The `USE_BASE64=true` option embeds the emoji images and sounds directly into the `manifest.json` file as base64 data URLs. This allows everything to work on GitHub Pages without Git LFS.
 
 ### 2. Deploy to GitHub Pages
 

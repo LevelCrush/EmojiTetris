@@ -370,6 +370,47 @@ body {
     pointer-events: none;
 }
 
+/* Sound Status Indicator */
+.sound-status {
+    position: fixed;
+    bottom: 60px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    font-size: 11px;
+    transition: opacity 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sound-status.has-sounds {
+    border-color: rgba(138, 43, 226, 0.8);
+    color: #8A2BE2;
+}
+
+.sound-status.no-sounds {
+    border-color: rgba(128, 128, 128, 0.8);
+    color: #808080;
+}
+
+.sound-status.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.sound-icon {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .game-container {

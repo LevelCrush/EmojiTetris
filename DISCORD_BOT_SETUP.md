@@ -41,6 +41,7 @@ This guide will help you set up a Discord bot to fetch emojis from your server.
 4. Under "Bot Permissions", select:
    - `Read Messages/View Channels`
    - `Use External Emojis` (optional but recommended)
+   - `Use Soundboard` (to access soundboard sounds)
 5. Copy the generated URL at the bottom
 6. Open the URL in your browser
 7. Select your server and click "Authorize"

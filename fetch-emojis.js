@@ -20,7 +20,7 @@ if (!fs.existsSync(OUTPUT_DIR)) {
 
 // Create Discord client
 const client = new Client({
-    intents: [GatewayIntentBits.Guilds]
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates]
 });
 
 // Function to download emoji
@@ -51,6 +51,34 @@ function downloadEmoji(url, filename) {
     });
 }
 
+// Function to download sound
+function downloadSound(url, filename) {
+    return new Promise((resolve, reject) => {
+        https.get(url, (response) => {
+            const chunks = [];
+            response.on('data', (chunk) => chunks.push(chunk));
+            response.on('end', () => {
+                const buffer = Buffer.concat(chunks);
+                
+                if (USE_BASE64) {
+                    // Return base64 data URL for audio
+                    const base64 = buffer.toString('base64');
+                    const mimeType = filename.endsWith('.ogg') ? 'audio/ogg' : 'audio/mpeg';
+                    const dataUrl = `data:${mimeType};base64,${base64}`;
+                    resolve({ dataUrl, buffer });
+                } else {
+                    // Save file normally
+                    fs.writeFileSync(path.join(OUTPUT_DIR, filename), buffer);
+                    console.log(`Downloaded sound: ${filename}`);
+                    resolve({ buffer });
+                }
+            });
+        }).on('error', (err) => {
+            reject(err);
+        });
+    });
+}
+
 // Main function
 async function fetchEmojis() {
     try {
@@ -72,9 +100,21 @@ async function fetchEmojis() {
         const emojis = await guild.emojis.fetch();
         console.log(`Found ${emojis.size} custom emojis`);
 
+        // Fetch soundboard sounds
+        let soundboardSounds = [];
+        try {
+            // Fetch all soundboard sounds for the guild
+            const sounds = await guild.soundboardSounds.fetch();
+            console.log(`Found ${sounds.size} soundboard sounds`);
+            soundboardSounds = sounds;
+        } catch (error) {
+            console.log('Could not fetch soundboard sounds:', error.message);
+        }
+
         // Create emoji manifest
         const manifest = {
             emojis: [],
+            sounds: [],
             fetchedAt: new Date().toISOString(),
             guildName: guild.name,
             guildId: guild.id,
@@ -114,12 +154,46 @@ async function fetchEmojis() {
             }
         }
 
+        // Download soundboard sounds
+        if (soundboardSounds.size > 0) {
+            console.log('\nDownloading soundboard sounds...');
+            let soundIndex = 0;
+            
+            for (const [id, sound] of soundboardSounds) {
+                try {
+                    const filename = `${sound.name.replace(/[^a-z0-9]/gi, '_')}_${id}.ogg`;
+                    const soundUrl = `https://cdn.discordapp.com/soundboard-sounds/${id}`;
+                    
+                    const result = await downloadSound(soundUrl, filename);
+                    
+                    const soundData = {
+                        id: id,
+                        name: sound.name,
+                        filename: filename,
+                        index: soundIndex
+                    };
+                    
+                    if (USE_BASE64) {
+                        soundData.dataUrl = result.dataUrl;
+                        console.log(`Converted sound '${sound.name}' to base64`);
+                    }
+                    
+                    manifest.sounds.push(soundData);
+                    soundIndex++;
+                } catch (error) {
+                    console.error(`Failed to download sound ${sound.name}: ${error.message}`);
+                }
+            }
+            
+            console.log(`Downloaded ${manifest.sounds.length} soundboard sounds`);
+        }
+
         // Save manifest
         fs.writeFileSync(
             path.join(OUTPUT_DIR, 'manifest.json'),
             JSON.stringify(manifest, null, 2)
         );
-        console.log('Emoji manifest saved!');
+        console.log('Manifest saved with emojis and sounds!');
 
         // Disconnect client
         client.destroy();

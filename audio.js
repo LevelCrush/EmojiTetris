@@ -206,5 +206,6 @@ window.audioManager = {
     setVolume,
     toggleMute,
     loadCustomVideo,
-    isReady: () => isPlayerReady
+    isReady: () => isPlayerReady,
+    getVolume: () => currentVolume
 };

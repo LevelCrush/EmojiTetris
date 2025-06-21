@@ -36,6 +36,11 @@ class EmojiTetris {
         this.emojiImages = {};
         this.loadEmojis();
         
+        // Soundboard sounds
+        this.sounds = [];
+        this.soundAudios = {};
+        this.loadSounds();
+        
         // Particle system
         this.particleSystem = new ParticleSystem(document.getElementById('particle-canvas'));
         
@@ -139,6 +144,97 @@ class EmojiTetris {
         statusEl.className = 'emoji-status';
         if (type) {
             statusEl.classList.add(type);
+        }
+    }
+    
+    loadSounds() {
+        // Try to load Discord sounds from manifest
+        fetch('emojis/manifest.json')
+            .then(res => {
+                if (!res.ok) throw new Error('Manifest not found');
+                return res.json();
+            })
+            .then(manifest => {
+                if (manifest.sounds && manifest.sounds.length > 0) {
+                    this.loadDiscordSounds(manifest);
+                } else {
+                    console.log('No Discord sounds found in manifest');
+                }
+            })
+            .catch((error) => {
+                console.log('Discord sounds not available:', error.message);
+            });
+    }
+    
+    loadDiscordSounds(manifest) {
+        console.log(`Loading ${manifest.sounds.length} Discord sounds...`);
+        
+        const soundStatusEl = document.getElementById('sound-status');
+        const soundTextEl = document.getElementById('sound-status-text');
+        
+        soundStatusEl.classList.remove('hidden');
+        soundTextEl.textContent = `Loading ${manifest.sounds.length} sounds...`;
+        
+        manifest.sounds.forEach((sound) => {
+            const audio = new Audio();
+            
+            // Use base64 data URL if available, otherwise load from file
+            if (sound.dataUrl) {
+                audio.src = sound.dataUrl;
+            } else {
+                audio.src = `emojis/${sound.filename}`;
+            }
+            
+            audio.volume = 0.5; // Default volume
+            audio.preload = 'auto';
+            
+            this.soundAudios[sound.index] = {
+                audio: audio,
+                name: sound.name
+            };
+            
+            this.sounds.push(sound);
+        });
+        
+        console.log('Discord sounds loaded!');
+        
+        // Update status
+        soundStatusEl.className = 'sound-status has-sounds';
+        soundTextEl.textContent = `${this.sounds.length} sounds ready!`;
+        
+        // Hide after delay
+        setTimeout(() => {
+            soundStatusEl.classList.add('hidden');
+        }, 5000);
+    }
+    
+    playRandomSound() {
+        if (this.sounds.length === 0) return;
+        
+        // Pick a random sound
+        const randomIndex = Math.floor(Math.random() * this.sounds.length);
+        const soundData = this.soundAudios[randomIndex];
+        
+        if (soundData && soundData.audio) {
+            // Clone the audio to allow overlapping sounds
+            const audio = soundData.audio.cloneNode();
+            audio.volume = (window.audioManager?.getVolume() || 50) / 100; // Use the game volume
+            audio.play().catch(e => console.log('Sound play failed:', e));
+            
+            console.log(`Playing sound: ${soundData.name}`);
+            
+            // Show sound name briefly
+            const soundStatusEl = document.getElementById('sound-status');
+            const soundTextEl = document.getElementById('sound-status-text');
+            
+            soundStatusEl.className = 'sound-status has-sounds';
+            soundTextEl.textContent = `🎵 ${soundData.name}`;
+            
+            // Hide after a moment
+            clearTimeout(this.soundHideTimeout);
+            this.soundHideTimeout = setTimeout(() => {
+                soundStatusEl.classList.add('hidden');
+            }, 2000);
         }
     }
     
@@ -360,6 +456,9 @@ class EmojiTetris {
         if (linesToClear.length > 0) {
             // Create particle effects
             this.particleSystem.createLineClearEffect(linesToClear, this.canvas.width, this.canvas.height);
+            
+            // Play sound effect
+            this.playRandomSound();
             
             // Remove cleared lines
             linesToClear.forEach(y => {
