@@ -59,6 +59,9 @@ class EmojiTetris {
             L: [[0,0,1], [1,1,1], [0,0,0]]
         };
         
+        // Mobile detection
+        this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
         // Initialize
         this.init();
     }
@@ -251,9 +254,13 @@ class EmojiTetris {
         // Spawn first piece
         this.spawnPiece();
         
-        // Start game loop
+        // Start game loop with performance timing
         this.lastTime = 0;
-        requestAnimationFrame(this.gameLoop.bind(this));
+        this.dropAccumulator = 0;
+        
+        // Use a consistent game loop timing
+        this.gameLoopBound = this.gameLoop.bind(this);
+        requestAnimationFrame(this.gameLoopBound);
         
         // UI event listeners
         document.getElementById('restart-btn').addEventListener('click', () => this.restart());
@@ -607,6 +614,8 @@ class EmojiTetris {
         this.heldPiece = null;
         this.canHold = true;
         this.nextPieces = [];
+        this.dropAccumulator = 0;
+        this.lastTime = 0;
         
         // Update UI
         this.updateScore();
@@ -624,24 +633,42 @@ class EmojiTetris {
     }
     
     gameLoop(currentTime) {
-        requestAnimationFrame(this.gameLoop.bind(this));
+        requestAnimationFrame(this.gameLoopBound);
         
         if (this.gameOver || this.paused) return;
         
+        // Initialize lastTime if not set
+        if (!this.lastTime) {
+            this.lastTime = currentTime;
+            return;
+        }
+        
         // Calculate delta time
-        const deltaTime = currentTime - this.lastTime;
+        let deltaTime = currentTime - this.lastTime;
         this.lastTime = currentTime;
+        
+        // Mobile fix: cap frame time to 16.67ms (60fps) to prevent timing issues
+        if (this.isMobile) {
+            deltaTime = Math.min(deltaTime, 16.67);
+        }
+        
+        // Additional safety: skip frames that are too large
+        if (deltaTime > 100) {
+            return; // Skip this frame
+        }
         
         // Apply slow motion effect
         const timeMultiplier = Date.now() < this.slowMotionEndTime ? 0.3 : 1;
         
-        // Auto drop
-        const dropSpeed = this.softDropping ? 50 : this.dropTime;
-        this.lastDrop += deltaTime * timeMultiplier;
+        // Use accumulator pattern for consistent timing
+        this.dropAccumulator += deltaTime * timeMultiplier;
         
-        if (this.lastDrop > dropSpeed) {
+        // Auto drop with fixed time step
+        const dropSpeed = this.softDropping ? 50 : this.dropTime;
+        
+        while (this.dropAccumulator >= dropSpeed) {
             this.movePiece(0, 1);
-            this.lastDrop = 0;
+            this.dropAccumulator -= dropSpeed;
             
             if (this.softDropping) {
                 this.score += 1;
