@@ -64,28 +64,74 @@ class EmojiTetris {
     loadEmojis() {
         // Default emojis for testing (will be replaced by Discord emojis)
         this.emojis = ['🔴', '🟠', '🟡', '🟢', '🔵', '🟣', '🟤'];
+        this.useDefaultEmojis = true;
         
         // Try to load Discord emojis
         fetch('emojis/manifest.json')
-            .then(res => res.json())
-            .then(manifest => {
-                this.loadDiscordEmojis(manifest);
+            .then(res => {
+                if (!res.ok) throw new Error('Manifest not found');
+                return res.json();
             })
-            .catch(() => {
-                console.log('Using default emojis');
+            .then(manifest => {
+                if (manifest.emojis && manifest.emojis.length > 0) {
+                    this.loadDiscordEmojis(manifest);
+                    this.useDefaultEmojis = false;
+                } else {
+                    console.log('No Discord emojis found in manifest, using default emojis');
+                }
+            })
+            .catch((error) => {
+                console.log('Discord emojis not available, using default emojis:', error.message);
+                this.updateEmojiStatus('Using default emoji blocks', 'default');
+                setTimeout(() => {
+                    document.getElementById('emoji-status').classList.add('hidden');
+                }, 3000);
             });
     }
     
     loadDiscordEmojis(manifest) {
+        let loadedCount = 0;
+        const emojiCount = Math.min(7, manifest.emojis.length);
+        
+        // Update status
+        this.updateEmojiStatus(`Loading ${emojiCount} Discord emojis...`);
+        
         manifest.emojis.forEach((emoji, index) => {
             if (index < 7) { // Only need 7 emojis for Tetris pieces
                 const img = new Image();
                 img.src = `emojis/${emoji.filename}`;
                 img.onload = () => {
                     this.emojiImages[index] = img;
+                    loadedCount++;
+                    
+                    if (loadedCount === emojiCount) {
+                        this.updateEmojiStatus(`Loaded ${emojiCount} Discord emojis!`, 'success');
+                        setTimeout(() => {
+                            document.getElementById('emoji-status').classList.add('hidden');
+                        }, 3000);
+                    }
+                };
+                img.onerror = () => {
+                    console.error(`Failed to load emoji: ${emoji.filename}`);
+                    loadedCount++;
+                    
+                    if (loadedCount === emojiCount) {
+                        this.updateEmojiStatus('Some emojis failed to load', 'default');
+                    }
                 };
             }
         });
+    }
+    
+    updateEmojiStatus(message, type = '') {
+        const statusEl = document.getElementById('emoji-status');
+        const textEl = document.getElementById('emoji-status-text');
+        
+        textEl.textContent = message;
+        statusEl.className = 'emoji-status';
+        if (type) {
+            statusEl.classList.add(type);
+        }
     }
     
     init() {

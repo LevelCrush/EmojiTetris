@@ -342,6 +342,34 @@ body {
     box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
 }
 
+/* Emoji Status Indicator */
+.emoji-status {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    font-size: 12px;
+    transition: opacity 0.3s;
+}
+
+.emoji-status.success {
+    border-color: rgba(76, 175, 80, 0.8);
+    color: #4CAF50;
+}
+
+.emoji-status.default {
+    border-color: rgba(255, 152, 0, 0.8);
+    color: #FF9800;
+}
+
+.emoji-status.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .game-container {
