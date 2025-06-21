@@ -482,6 +482,12 @@ class EmojiTetris {
             // Vibrate based on lines cleared
             const vibrationPattern = [0, 50, 50, 100, 50, 150, 50, 200];
             this.controls.vibrate(vibrationPattern.slice(0, linesToClear.length * 2));
+            
+            // Play next video if cleared 2+ lines (considered a "round complete")
+            if (linesToClear.length >= 2 && window.audioManager && window.audioManager.isReady()) {
+                console.log(`Round complete! Cleared ${linesToClear.length} lines, playing next video`);
+                window.audioManager.playNextVideo();
+            }
         }
         
         return linesToClear;

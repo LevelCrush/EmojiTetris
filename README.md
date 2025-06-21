@@ -11,8 +11,14 @@ A fun Tetris game that uses Discord emojis as game pieces, with YouTube backgrou
   
 - 🎵 **YouTube Background Music**
   - Custom YouTube video/playlist support
+  - Automatic progression: Next video plays when clearing 2+ lines
+  - Multiple input formats:
+    - Single video URL: `https://youtube.com/watch?v=VIDEO_ID`
+    - Playlist URL: `https://youtube.com/playlist?list=PLAYLIST_ID`
+    - Comma-separated IDs: `VIDEO_ID1,VIDEO_ID2,VIDEO_ID3`
+  - Default mix of Tetris remixes and gaming music
   - Volume controls with mute toggle
-  - Default curated playlists included
+  - Shows current video position in playlist
 
 - 🔊 **Discord Soundboard Integration**
   - Plays random sounds from your server's soundboard when clearing lines

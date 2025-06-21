@@ -411,6 +411,29 @@ body {
     100% { opacity: 0.6; }
 }
 
+/* Video Info Display */
+.video-info {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: opacity 0.3s;
+}
+
+.video-info.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .game-container {

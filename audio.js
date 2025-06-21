@@ -3,8 +3,25 @@ let player;
 let isPlayerReady = false;
 let currentVolume = 50;
 let isMuted = false;
+let currentVideoIndex = 0;
+let isPlayingPlaylist = false;
+let customVideoIds = [];
 
-// Default playlists
+// Default video IDs (Tetris and gaming music)
+const DEFAULT_VIDEO_IDS = [
+    'NmCCQxVBfyM', // Tetris Theme A Remix
+    'QQ9RPTEkQW4', // Tetris 99 Theme
+    '9Fv5cuYZFC0', // Tetris Effect Journey
+    'hWTFG3J1CP8', // C418 - Sweden (Minecraft)
+    'jl6kjAkVw_s', // Retro Gaming Music Mix
+    'VYAMoFbeVFU', // HOGTV - hahahaha hohohoho
+    'yzC4hFK5P3g', // PONPONPON
+    'dXqtrHJAqVM', // DON'T TOUCH MY CLOGS
+    'QScTSfdY0N0', // Kirby's Dream Land - Green Greens
+    'MkKh_Zeu6qs'  // Mario Paint - Creative Exercise
+];
+
+// Default playlists (fallback)
 const DEFAULT_PLAYLISTS = {
     tetris: 'PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPboYG',
     gaming: 'PLFgquLnL59alCl_2TQvOiD5Vgm1hCaGSI'
@@ -12,24 +29,29 @@ const DEFAULT_PLAYLISTS = {
 
 // Initialize YouTube Player
 function onYouTubeIframeAPIReady() {
+    // Start with first video from default list
+    const firstVideoId = DEFAULT_VIDEO_IDS[0];
+    
     player = new YT.Player('youtube-player', {
         height: '100%',
         width: '100%',
+        videoId: firstVideoId,
         playerVars: {
             autoplay: 1,
             mute: 1, // Start muted for autoplay
-            loop: 1,
-            playlist: DEFAULT_PLAYLISTS.tetris,
             controls: 0,
             showinfo: 0,
             rel: 0,
             enablejsapi: 1,
             modestbranding: 1,
-            iv_load_policy: 3
+            iv_load_policy: 3,
+            disablekb: 1,
+            fs: 0
         },
         events: {
             'onReady': onPlayerReady,
-            'onStateChange': onPlayerStateChange
+            'onStateChange': onPlayerStateChange,
+            'onError': onPlayerError
         }
     });
 }
@@ -37,6 +59,9 @@ function onYouTubeIframeAPIReady() {
 function onPlayerReady(event) {
     isPlayerReady = true;
     player.setVolume(currentVolume);
+    
+    // Show initial video info
+    updateVideoInfo(`♪ Video 1/${DEFAULT_VIDEO_IDS.length}`);
     
     // Attempt to unmute after user interaction
     document.addEventListener('click', unmuteinitial, { once: true });
@@ -51,7 +76,59 @@ function unmuteinitial() {
 
 function onPlayerStateChange(event) {
     if (event.data === YT.PlayerState.ENDED) {
-        player.playVideo();
+        playNextVideo();
+    }
+}
+
+function onPlayerError(event) {
+    console.log('YouTube player error:', event.data);
+    // Skip to next video on error
+    playNextVideo();
+}
+
+// Play next video in sequence
+function playNextVideo() {
+    if (!isPlayerReady || !player) return;
+    
+    const videoList = customVideoIds.length > 0 ? customVideoIds : DEFAULT_VIDEO_IDS;
+    currentVideoIndex = (currentVideoIndex + 1) % videoList.length;
+    
+    const nextVideoId = videoList[currentVideoIndex];
+    console.log(`Playing next video: ${nextVideoId} (${currentVideoIndex + 1}/${videoList.length})`);
+    
+    player.loadVideoById(nextVideoId);
+    updateVideoInfo(`♪ Video ${currentVideoIndex + 1}/${videoList.length}`);
+}
+
+// Play random video (for game events)
+function playRandomVideo() {
+    if (!isPlayerReady || !player) return;
+    
+    const videoList = customVideoIds.length > 0 ? customVideoIds : DEFAULT_VIDEO_IDS;
+    const randomIndex = Math.floor(Math.random() * videoList.length);
+    currentVideoIndex = randomIndex;
+    
+    const videoId = videoList[randomIndex];
+    console.log(`Playing random video: ${videoId}`);
+    
+    player.loadVideoById(videoId);
+    updateVideoInfo(`♪ Random video`);
+}
+
+// Update video info display
+function updateVideoInfo(text) {
+    const videoInfoEl = document.getElementById('video-info');
+    const videoTextEl = document.getElementById('video-info-text');
+    
+    if (videoInfoEl && videoTextEl) {
+        videoTextEl.textContent = text;
+        videoInfoEl.classList.remove('hidden');
+        
+        // Hide after 5 seconds
+        clearTimeout(window.videoInfoTimeout);
+        window.videoInfoTimeout = setTimeout(() => {
+            videoInfoEl.classList.add('hidden');
+        }, 5000);
     }
 }
 
@@ -79,6 +156,11 @@ function parseYouTubeUrl(url) {
         }
     }
     
+    // Check if it's a comma-separated list of video IDs
+    if (url.includes(',')) {
+        return { type: 'videoList', ids: url.split(',').map(id => id.trim()) };
+    }
+    
     // If no pattern matches, assume it's a direct ID
     return { type: 'video', id: url };
 }
@@ -91,11 +173,21 @@ function loadCustomVideo(url) {
     if (!parsed) return;
     
     if (parsed.type === 'playlist') {
+        // For playlists, we'll fetch the videos and add to our custom list
+        isPlayingPlaylist = true;
         player.loadPlaylist({
             list: parsed.id,
             listType: 'playlist'
         });
+    } else if (parsed.type === 'videoList') {
+        // Multiple video IDs provided
+        customVideoIds = parsed.ids;
+        currentVideoIndex = 0;
+        player.loadVideoById(customVideoIds[0]);
     } else {
+        // Single video ID
+        customVideoIds = [parsed.id];
+        currentVideoIndex = 0;
         player.loadVideoById(parsed.id);
     }
     
@@ -154,8 +246,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Playlist buttons
     document.querySelectorAll('.playlist-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            const playlistId = btn.dataset.playlist;
-            loadCustomVideo(`https://www.youtube.com/playlist?list=${playlistId}`);
+            if (btn.dataset.action === 'default') {
+                // Reset to default video list
+                customVideoIds = [];
+                currentVideoIndex = 0;
+                localStorage.removeItem('customYouTubeUrl');
+                if (player && isPlayerReady) {
+                    player.loadVideoById(DEFAULT_VIDEO_IDS[0]);
+                }
+            } else {
+                const playlistId = btn.dataset.playlist;
+                loadCustomVideo(`https://www.youtube.com/playlist?list=${playlistId}`);
+            }
             settingsContent.classList.add('hidden');
         });
     });
@@ -207,5 +309,7 @@ window.audioManager = {
     toggleMute,
     loadCustomVideo,
     isReady: () => isPlayerReady,
-    getVolume: () => currentVolume
+    getVolume: () => currentVolume,
+    playNextVideo,
+    playRandomVideo
 };

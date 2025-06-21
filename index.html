@@ -28,6 +28,13 @@
                 <label>Default Playlists:</label>
                 <button class="playlist-btn" data-playlist="PLx0sYbCqOb8TBPRdmBHs5Iftvv9TPboYG">Tetris Remixes</button>
                 <button class="playlist-btn" data-playlist="PLFgquLnL59alCl_2TQvOiD5Vgm1hCaGSI">Gaming Music</button>
+                <button class="playlist-btn" data-action="default">Default Mix</button>
+            </div>
+            <div class="settings-group">
+                <small style="color: #aaa;">
+                    Tip: Enter comma-separated video IDs for a custom playlist<br>
+                    Example: dQw4w9WgXcQ,9bZkp7q19f0,kJQP7kiw5Fk
+                </small>
             </div>
         </div>
     </div>
@@ -103,6 +110,11 @@
     <div id="sound-status" class="sound-status hidden">
         <span class="sound-icon">🔊</span>
         <span id="sound-status-text">No sounds</span>
+    </div>
+    
+    <!-- Video Info Display -->
+    <div id="video-info" class="video-info hidden">
+        <span id="video-info-text">♪ Loading...</span>
     </div>
 
     <!-- Game Over Modal -->
