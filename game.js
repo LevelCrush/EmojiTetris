@@ -30,6 +30,7 @@ class EmojiTetris {
         this.lastDrop = 0;
         this.softDropping = false;
         this.slowMotionEndTime = 0;
+        this.piecesSpawned = 0;
         
         // Emoji pieces
         this.emojis = [];
@@ -265,15 +266,66 @@ class EmojiTetris {
     createPiece() {
         const shapes = Object.keys(this.shapes);
         const shape = shapes[Math.floor(Math.random() * shapes.length)];
-        const emoji = Math.floor(Math.random() * this.emojis.length);
+        
+        this.piecesSpawned++;
+        
+        // Special rainbow piece every 10 pieces (20% chance)
+        const isRainbow = this.piecesSpawned % 10 === 0 && Math.random() < 0.2;
+        
+        // More randomness in emoji selection
+        let emoji;
+        if (isRainbow) {
+            // Rainbow piece - will cycle through emojis
+            emoji = 'rainbow';
+        } else if (Math.random() < 0.15) {
+            // 15% chance to use any emoji (increased from 10%)
+            emoji = Math.floor(Math.random() * this.emojis.length);
+        } else {
+            // 85% chance to use weighted random (favors variety)
+            emoji = this.getWeightedRandomEmoji();
+        }
         
         return {
             shape: shape,
             matrix: this.shapes[shape],
             emoji: emoji,
+            isRainbow: isRainbow,
             x: Math.floor(this.cols / 2) - Math.floor(this.shapes[shape][0].length / 2),
             y: 0
         };
+    }
+    
+    getWeightedRandomEmoji() {
+        // Track emoji usage to encourage variety
+        if (!this.emojiUsageCount) {
+            this.emojiUsageCount = new Array(this.emojis.length).fill(0);
+        }
+        
+        // Calculate weights (less used emojis get higher weight)
+        const totalUsage = this.emojiUsageCount.reduce((a, b) => a + b, 0) || 1;
+        const avgUsage = totalUsage / this.emojis.length;
+        
+        const weights = this.emojiUsageCount.map(count => {
+            // Inverse weight - less used emojis have higher chance
+            return Math.max(1, avgUsage * 2 - count);
+        });
+        
+        // Weighted random selection
+        const totalWeight = weights.reduce((a, b) => a + b, 0);
+        let random = Math.random() * totalWeight;
+        
+        for (let i = 0; i < weights.length; i++) {
+            random -= weights[i];
+            if (random <= 0) {
+                this.emojiUsageCount[i]++;
+                return i;
+            }
+        }
+        
+        // Fallback
+        const fallback = Math.floor(Math.random() * this.emojis.length);
+        this.emojiUsageCount[fallback]++;
+        return fallback;
     }
     
     spawnPiece() {
@@ -431,7 +483,12 @@ class EmojiTetris {
                     const boardX = this.currentPiece.x + x;
                     
                     if (boardY >= 0) {
-                        this.board[boardY][boardX] = this.currentPiece.emoji + 1;
+                        // Store rainbow pieces with a special value
+                        if (this.currentPiece.isRainbow) {
+                            this.board[boardY][boardX] = -1; // Special rainbow indicator
+                        } else {
+                            this.board[boardY][boardX] = this.currentPiece.emoji + 1;
+                        }
                     }
                 }
             }
@@ -556,6 +613,9 @@ class EmojiTetris {
         document.getElementById('level').textContent = this.level;
         document.getElementById('game-over-modal').classList.add('hidden');
         
+        // Reset emoji usage tracking
+        this.emojiUsageCount = new Array(this.emojis.length).fill(0);
+        
         // Reset game
         for (let i = 0; i < 4; i++) {
             this.nextPieces.push(this.createPiece());
@@ -623,7 +683,13 @@ class EmojiTetris {
         for (let y = 0; y < this.rows; y++) {
             for (let x = 0; x < this.cols; x++) {
                 if (this.board[y][x]) {
-                    this.drawBlock(x, y, this.board[y][x] - 1);
+                    if (this.board[y][x] === -1) {
+                        // Rainbow block
+                        this.drawBlock(x, y, 0, 1, true);
+                    } else {
+                        // Normal block
+                        this.drawBlock(x, y, this.board[y][x] - 1);
+                    }
                 }
             }
         }
@@ -639,8 +705,9 @@ class EmojiTetris {
                         this.drawBlock(
                             this.currentPiece.x + x,
                             this.currentPiece.y + y,
-                            this.currentPiece.emoji,
-                            1
+                            this.currentPiece.emoji === 'rainbow' ? 0 : this.currentPiece.emoji,
+                            1,
+                            this.currentPiece.isRainbow
                         );
                     }
                 }
@@ -664,13 +731,19 @@ class EmojiTetris {
         for (let y = 0; y < ghost.matrix.length; y++) {
             for (let x = 0; x < ghost.matrix[y].length; x++) {
                 if (ghost.matrix[y][x]) {
-                    this.drawBlock(ghost.x + x, ghost.y + y, ghost.emoji, 0.3);
+                    this.drawBlock(
+                        ghost.x + x, 
+                        ghost.y + y, 
+                        ghost.emoji === 'rainbow' ? 0 : ghost.emoji, 
+                        0.3,
+                        ghost.isRainbow
+                    );
                 }
             }
         }
     }
     
-    drawBlock(x, y, emojiIndex, alpha = 1) {
+    drawBlock(x, y, emojiIndex, alpha = 1, isRainbow = false) {
         const blockX = x * this.blockSize;
         const blockY = y * this.blockSize;
         
@@ -678,8 +751,25 @@ class EmojiTetris {
         this.ctx.globalAlpha = alpha;
         
         // Draw block background
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+        if (isRainbow) {
+            // Rainbow gradient background
+            const gradient = this.ctx.createLinearGradient(blockX, blockY, blockX + this.blockSize, blockY + this.blockSize);
+            const time = Date.now() / 1000;
+            const hue = ((time * 60 + x * 30 + y * 30) % 360);
+            gradient.addColorStop(0, `hsla(${hue}, 100%, 50%, 0.3)`);
+            gradient.addColorStop(0.5, `hsla(${(hue + 60) % 360}, 100%, 50%, 0.3)`);
+            gradient.addColorStop(1, `hsla(${(hue + 120) % 360}, 100%, 50%, 0.3)`);
+            this.ctx.fillStyle = gradient;
+        } else {
+            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+        }
         this.ctx.fillRect(blockX, blockY, this.blockSize, this.blockSize);
+        
+        // For rainbow pieces, cycle through emojis
+        if (isRainbow) {
+            const time = Date.now() / 500; // Change every 500ms
+            emojiIndex = Math.floor(time + x + y) % this.emojis.length;
+        }
         
         // Draw emoji or image
         if (this.emojiImages[emojiIndex]) {
@@ -704,8 +794,13 @@ class EmojiTetris {
         }
         
         // Draw block border
-        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-        this.ctx.lineWidth = 1;
+        if (isRainbow) {
+            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+            this.ctx.lineWidth = 2;
+        } else {
+            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            this.ctx.lineWidth = 1;
+        }
         this.ctx.strokeRect(blockX, blockY, this.blockSize, this.blockSize);
         
         this.ctx.restore();

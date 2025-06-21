@@ -7,19 +7,9 @@ let currentVideoIndex = 0;
 let isPlayingPlaylist = false;
 let customVideoIds = [];
 
-// Default video IDs (Tetris and gaming music)
-const DEFAULT_VIDEO_IDS = [
-    'NmCCQxVBfyM', // Tetris Theme A Remix
-    'QQ9RPTEkQW4', // Tetris 99 Theme
-    '9Fv5cuYZFC0', // Tetris Effect Journey
-    'hWTFG3J1CP8', // C418 - Sweden (Minecraft)
-    'jl6kjAkVw_s', // Retro Gaming Music Mix
-    'VYAMoFbeVFU', // HOGTV - hahahaha hohohoho
-    'yzC4hFK5P3g', // PONPONPON
-    'dXqtrHJAqVM', // DON'T TOUCH MY CLOGS
-    'QScTSfdY0N0', // Kirby's Dream Land - Green Greens
-    'MkKh_Zeu6qs'  // Mario Paint - Creative Exercise
-];
+// Default playlist - will be fetched from YouTube
+const DEFAULT_PLAYLIST_URL = 'https://www.youtube.com/watch?v=EgBCCG0kn8I&list=PLMXIaalhNrNXX6Tk6Avf3NrnEAtHs2QVd';
+const DEFAULT_VIDEO_IDS = []; // Will be populated from playlist or use fallback
 
 // Default playlists (fallback)
 const DEFAULT_PLAYLISTS = {
@@ -29,31 +19,59 @@ const DEFAULT_PLAYLISTS = {
 
 // Initialize YouTube Player
 function onYouTubeIframeAPIReady() {
-    // Start with first video from default list
-    const firstVideoId = DEFAULT_VIDEO_IDS[0];
+    // Parse the playlist from default URL
+    const parsed = parseYouTubeUrl(DEFAULT_PLAYLIST_URL);
     
-    player = new YT.Player('youtube-player', {
-        height: '100%',
-        width: '100%',
-        videoId: firstVideoId,
-        playerVars: {
-            autoplay: 1,
-            mute: 1, // Start muted for autoplay
-            controls: 0,
-            showinfo: 0,
-            rel: 0,
-            enablejsapi: 1,
-            modestbranding: 1,
-            iv_load_policy: 3,
-            disablekb: 1,
-            fs: 0
-        },
-        events: {
-            'onReady': onPlayerReady,
-            'onStateChange': onPlayerStateChange,
-            'onError': onPlayerError
-        }
-    });
+    if (parsed && parsed.type === 'playlist') {
+        // Load playlist
+        player = new YT.Player('youtube-player', {
+            height: '100%',
+            width: '100%',
+            playerVars: {
+                autoplay: 1,
+                mute: 1, // Start muted for autoplay
+                controls: 0,
+                showinfo: 0,
+                rel: 0,
+                enablejsapi: 1,
+                modestbranding: 1,
+                iv_load_policy: 3,
+                disablekb: 1,
+                fs: 0,
+                list: parsed.id,
+                listType: 'playlist'
+            },
+            events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange,
+                'onError': onPlayerError
+            }
+        });
+    } else {
+        // Fallback to single video
+        player = new YT.Player('youtube-player', {
+            height: '100%',
+            width: '100%',
+            videoId: 'EgBCCG0kn8I', // First video from the playlist
+            playerVars: {
+                autoplay: 1,
+                mute: 1,
+                controls: 0,
+                showinfo: 0,
+                rel: 0,
+                enablejsapi: 1,
+                modestbranding: 1,
+                iv_load_policy: 3,
+                disablekb: 1,
+                fs: 0
+            },
+            events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange,
+                'onError': onPlayerError
+            }
+        });
+    }
 }
 
 function onPlayerReady(event) {
@@ -61,7 +79,7 @@ function onPlayerReady(event) {
     player.setVolume(currentVolume);
     
     // Show initial video info
-    updateVideoInfo(`♪ Video 1/${DEFAULT_VIDEO_IDS.length}`);
+    updateVideoInfo(`♪ Playing default playlist`);
     
     // Attempt to unmute after user interaction
     document.addEventListener('click', unmuteinitial, { once: true });
@@ -90,14 +108,18 @@ function onPlayerError(event) {
 function playNextVideo() {
     if (!isPlayerReady || !player) return;
     
-    const videoList = customVideoIds.length > 0 ? customVideoIds : DEFAULT_VIDEO_IDS;
-    currentVideoIndex = (currentVideoIndex + 1) % videoList.length;
-    
-    const nextVideoId = videoList[currentVideoIndex];
-    console.log(`Playing next video: ${nextVideoId} (${currentVideoIndex + 1}/${videoList.length})`);
-    
-    player.loadVideoById(nextVideoId);
-    updateVideoInfo(`♪ Video ${currentVideoIndex + 1}/${videoList.length}`);
+    // If we have a custom video list, use that
+    if (customVideoIds.length > 0) {
+        currentVideoIndex = (currentVideoIndex + 1) % customVideoIds.length;
+        const nextVideoId = customVideoIds[currentVideoIndex];
+        console.log(`Playing next video: ${nextVideoId} (${currentVideoIndex + 1}/${customVideoIds.length})`);
+        player.loadVideoById(nextVideoId);
+        updateVideoInfo(`♪ Video ${currentVideoIndex + 1}/${customVideoIds.length}`);
+    } else {
+        // Otherwise, use YouTube's playlist navigation
+        player.nextVideo();
+        updateVideoInfo(`♪ Next video`);
+    }
 }
 
 // Play random video (for game events)
@@ -247,16 +269,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.playlist-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             if (btn.dataset.action === 'default') {
-                // Reset to default video list
+                // Reset to default playlist
                 customVideoIds = [];
                 currentVideoIndex = 0;
                 localStorage.removeItem('customYouTubeUrl');
                 if (player && isPlayerReady) {
-                    player.loadVideoById(DEFAULT_VIDEO_IDS[0]);
+                    // Load the default playlist
+                    loadCustomVideo(DEFAULT_PLAYLIST_URL);
                 }
-            } else {
-                const playlistId = btn.dataset.playlist;
-                loadCustomVideo(`https://www.youtube.com/playlist?list=${playlistId}`);
             }
             settingsContent.classList.add('hidden');
         });
