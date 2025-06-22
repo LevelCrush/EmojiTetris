@@ -654,8 +654,8 @@ class EmojiTetris {
                 this.dropTime = Math.max(100, 1000 - (this.level - 1) * 100);
                 document.getElementById('level').textContent = this.level;
                 
-                // Trigger rainbow border effect for 3 seconds
-                this.rainbowBorderEndTime = Date.now() + 3000;
+                // Trigger rainbow border effect for 5 seconds
+                this.rainbowBorderEndTime = Date.now() + 5000;
                 console.log(`Level up! Now level ${this.level}`);
             }
             
@@ -841,8 +841,9 @@ class EmojiTetris {
                         // Rainbow block
                         this.drawBlock(x, y, 0, 1, true);
                     } else {
-                        // Normal block
-                        this.drawBlock(x, y, this.board[y][x] - 1);
+                        // Normal block (make it rainbow during level up effect)
+                        const isLevelUpRainbow = Date.now() < this.rainbowBorderEndTime;
+                        this.drawBlock(x, y, this.board[y][x] - 1, 1, isLevelUpRainbow);
                     }
                 }
             }
@@ -858,12 +859,13 @@ class EmojiTetris {
             for (let y = 0; y < this.currentPiece.matrix.length; y++) {
                 for (let x = 0; x < this.currentPiece.matrix[y].length; x++) {
                     if (this.currentPiece.matrix[y][x]) {
+                        const isLevelUpRainbow = Date.now() < this.rainbowBorderEndTime;
                         this.drawBlock(
                             this.currentPiece.x + x,
                             this.currentPiece.y + y,
                             this.currentPiece.emoji === 'rainbow' ? 0 : this.currentPiece.emoji,
                             1,
-                            this.currentPiece.isRainbow
+                            this.currentPiece.isRainbow || isLevelUpRainbow
                         );
                     }
                 }
@@ -892,12 +894,13 @@ class EmojiTetris {
         for (let y = 0; y < ghost.matrix.length; y++) {
             for (let x = 0; x < ghost.matrix[y].length; x++) {
                 if (ghost.matrix[y][x]) {
+                    const isLevelUpRainbow = Date.now() < this.rainbowBorderEndTime;
                     this.drawBlock(
                         ghost.x + x, 
                         ghost.y + y, 
                         ghost.emoji === 'rainbow' ? 0 : ghost.emoji, 
                         0.3,
-                        ghost.isRainbow
+                        ghost.isRainbow || isLevelUpRainbow
                     );
                 }
             }
@@ -1013,11 +1016,26 @@ class EmojiTetris {
             // Rainbow gradient background
             const gradient = this.ctx.createLinearGradient(blockX, blockY, blockX + this.blockSize, blockY + this.blockSize);
             const time = Date.now() / 1000;
-            const hue = ((time * 60 + x * 30 + y * 30) % 360);
-            gradient.addColorStop(0, `hsla(${hue}, 100%, 50%, 0.3)`);
-            gradient.addColorStop(0.5, `hsla(${(hue + 60) % 360}, 100%, 50%, 0.3)`);
-            gradient.addColorStop(1, `hsla(${(hue + 120) % 360}, 100%, 50%, 0.3)`);
+            const isLevelUpEffect = Date.now() < this.rainbowBorderEndTime;
+            
+            // More intense animation during level up
+            const speedMultiplier = isLevelUpEffect ? 3 : 1;
+            const hue = ((time * 60 * speedMultiplier + x * 30 + y * 30) % 360);
+            
+            // Brighter colors during level up
+            const lightness = isLevelUpEffect ? '60%' : '50%';
+            const opacity = isLevelUpEffect ? 0.6 : 0.3;
+            
+            gradient.addColorStop(0, `hsla(${hue}, 100%, ${lightness}, ${opacity})`);
+            gradient.addColorStop(0.5, `hsla(${(hue + 60) % 360}, 100%, ${lightness}, ${opacity})`);
+            gradient.addColorStop(1, `hsla(${(hue + 120) % 360}, 100%, ${lightness}, ${opacity})`);
             this.ctx.fillStyle = gradient;
+            
+            // Add glow effect during level up
+            if (isLevelUpEffect) {
+                this.ctx.shadowBlur = 10;
+                this.ctx.shadowColor = `hsl(${hue}, 100%, 50%)`;
+            }
         } else {
             this.ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
         }
@@ -1052,9 +1070,20 @@ class EmojiTetris {
         }
         
         // Draw block border
+        const isLevelUpEffect = Date.now() < this.rainbowBorderEndTime;
         if (isRainbow) {
-            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-            this.ctx.lineWidth = 2;
+            if (isLevelUpEffect) {
+                // Animated rainbow border during level up
+                const time = Date.now() / 100;
+                const hue = (time * 30 + x * 20 + y * 20) % 360;
+                this.ctx.strokeStyle = `hsl(${hue}, 100%, 70%)`;
+                this.ctx.lineWidth = 3;
+                this.ctx.shadowBlur = 5;
+                this.ctx.shadowColor = `hsl(${hue}, 100%, 50%)`;
+            } else {
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                this.ctx.lineWidth = 2;
+            }
         } else {
             this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
             this.ctx.lineWidth = 1;
