@@ -812,8 +812,7 @@ class EmojiTetris {
     
     draw() {
         // Clear canvas
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Draw grid
         this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
