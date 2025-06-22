@@ -117,10 +117,27 @@ function playNextVideo() {
         console.log(`Playing next video: ${nextVideoId} (${currentVideoIndex + 1}/${customVideoIds.length})`);
         player.loadVideoById(nextVideoId);
         updateVideoInfo(`♪ Video ${currentVideoIndex + 1}/${customVideoIds.length}`);
+    } else if (isPlayingPlaylist) {
+        // Use YouTube's playlist navigation
+        const currentIndex = player.getPlaylistIndex();
+        const playlistSize = player.getPlaylist() ? player.getPlaylist().length : 0;
+        
+        if (currentIndex !== -1 && playlistSize > 0) {
+            // Move to next video in playlist
+            const nextIndex = (currentIndex + 1) % playlistSize;
+            player.playVideoAt(nextIndex);
+            updateVideoInfo(`♪ Playlist video ${nextIndex + 1}/${playlistSize}`);
+        } else {
+            // Fallback to nextVideo
+            player.nextVideo();
+            updateVideoInfo(`♪ Next video`);
+        }
     } else {
-        // Otherwise, use YouTube's playlist navigation
-        player.nextVideo();
-        updateVideoInfo(`♪ Next video`);
+        // No playlist or custom videos, try to replay current video
+        const currentVideoUrl = player.getVideoUrl();
+        if (currentVideoUrl) {
+            player.playVideo();
+        }
     }
 }
 
@@ -194,29 +211,48 @@ function loadCustomVideo(url) {
     if (!isPlayerReady || !player) return;
     
     const parsed = parseYouTubeUrl(url);
-    if (!parsed) return;
+    if (!parsed) {
+        console.error('Invalid YouTube URL:', url);
+        return;
+    }
+    
+    console.log('Loading custom video:', parsed);
     
     if (parsed.type === 'playlist') {
-        // For playlists, we'll fetch the videos and add to our custom list
+        // For playlists, clear custom video list and use native playlist
+        customVideoIds = [];
         isPlayingPlaylist = true;
         player.loadPlaylist({
             list: parsed.id,
-            listType: 'playlist'
+            listType: 'playlist',
+            index: 0,
+            startSeconds: 0
         });
+        updateVideoInfo(`♪ Loading playlist: ${parsed.id}`);
     } else if (parsed.type === 'videoList') {
         // Multiple video IDs provided
         customVideoIds = parsed.ids;
         currentVideoIndex = 0;
+        isPlayingPlaylist = false;
         player.loadVideoById(customVideoIds[0]);
+        updateVideoInfo(`♪ Loading ${customVideoIds.length} videos`);
     } else {
         // Single video ID
         customVideoIds = [parsed.id];
         currentVideoIndex = 0;
+        isPlayingPlaylist = false;
         player.loadVideoById(parsed.id);
+        updateVideoInfo(`♪ Loading video: ${parsed.id}`);
     }
     
     // Save to localStorage
     localStorage.setItem('customYouTubeUrl', url);
+    
+    // Clear the input field after applying
+    const input = document.getElementById('youtube-url');
+    if (input) {
+        input.value = '';
+    }
 }
 
 // Volume Control
@@ -255,6 +291,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const url = youtubeInput.value.trim();
         if (url) {
             loadCustomVideo(url);
+            // Provide feedback
+            applyBtn.textContent = 'Applied!';
+            setTimeout(() => {
+                applyBtn.textContent = 'Apply';
+            }, 2000);
+        }
+    });
+    
+    // Allow Enter key to apply URL
+    youtubeInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const url = youtubeInput.value.trim();
+            if (url) {
+                loadCustomVideo(url);
+                applyBtn.textContent = 'Applied!';
+                setTimeout(() => {
+                    applyBtn.textContent = 'Apply';
+                }, 2000);
+            }
         }
     });
     
