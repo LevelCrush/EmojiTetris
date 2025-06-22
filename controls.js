@@ -7,6 +7,10 @@ class Controls {
         this.gamepadIndex = null;
         this.lastGamepadState = {};
         
+        // Double tap tracking for mobile
+        this.lastDownTap = 0;
+        this.doubleTapDelay = 300; // milliseconds
+        
         // Control mappings
         this.keyMap = {
             ArrowLeft: 'left',
@@ -54,10 +58,24 @@ class Controls {
         canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
         
         // Mobile control buttons (both regular and small)
-        document.querySelectorAll('.control-btn, .control-btn-small').forEach(btn => {
+        document.querySelectorAll('.control-btn, .control-btn-small, .rotate-btn').forEach(btn => {
             btn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                
+                // Check for double tap on down button
+                if (btn.dataset.action === 'down') {
+                    const now = Date.now();
+                    if (now - this.lastDownTap < this.doubleTapDelay) {
+                        // Double tap detected - hard drop
+                        this.performAction('hardDrop', true);
+                        this.vibrate(25);
+                        this.lastDownTap = 0; // Reset
+                        return;
+                    }
+                    this.lastDownTap = now;
+                }
+                
                 this.handleMobileButton(btn.dataset.action, true);
                 // Add haptic feedback
                 this.vibrate(10);
@@ -69,6 +87,19 @@ class Controls {
             });
             btn.addEventListener('mousedown', (e) => {
                 e.preventDefault();
+                
+                // Check for double click on down button
+                if (btn.dataset.action === 'down') {
+                    const now = Date.now();
+                    if (now - this.lastDownTap < this.doubleTapDelay) {
+                        // Double click detected - hard drop
+                        this.performAction('hardDrop', true);
+                        this.lastDownTap = 0; // Reset
+                        return;
+                    }
+                    this.lastDownTap = now;
+                }
+                
                 this.handleMobileButton(btn.dataset.action, true);
             });
             btn.addEventListener('mouseup', (e) => {

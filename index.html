@@ -115,7 +115,6 @@
         <div id="mobile-controls-top" class="mobile-controls-top">
             <button class="control-btn-small" data-action="pause">⏸️</button>
             <button class="control-btn-small" data-action="hold">HOLD</button>
-            <button class="control-btn-small" data-action="rotate">↻</button>
         </div>
 
         <!-- Hold Piece Display -->
@@ -126,15 +125,23 @@
 
         <!-- Main Game Area -->
         <div class="main-game">
-            <canvas id="game-canvas" width="300" height="600"></canvas>
-            <canvas id="particle-canvas" width="300" height="600"></canvas>
+            <!-- Left Rotate Button -->
+            <button class="rotate-btn rotate-left" data-action="rotate">↻</button>
+            
+            <div class="game-canvases">
+                <canvas id="game-canvas" width="300" height="600"></canvas>
+                <canvas id="particle-canvas" width="300" height="600"></canvas>
+            </div>
+            
+            <!-- Right Rotate Button -->
+            <button class="rotate-btn rotate-right" data-action="rotate">↻</button>
             
             <!-- Mobile Controls (Bottom) -->
             <div id="mobile-controls" class="mobile-controls">
                 <button class="control-btn" data-action="left">←</button>
                 <button class="control-btn" data-action="down">↓</button>
                 <button class="control-btn" data-action="right">→</button>
-                <button class="control-btn" data-action="drop">⬇</button>
+                <div class="drop-hint">Double tap ↓ for hard drop</div>
             </div>
         </div>
 
