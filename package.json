@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Tetris game using Discord emojis",
   "scripts": {
-    "fetch-emojis": "node fetch-emojis.js"
+    "fetch-emojis": "node fetch-emojis.js",
+    "fetch" : "node fetch-discord-assets.js"
   },
   "dependencies": {
     "discord.js": "^14.14.1",

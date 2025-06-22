@@ -51,11 +51,11 @@ A unique twist on the classic Tetris game that uses Discord server emojis as gam
    USE_BASE64=true
    ```
 
-4. **Fetch Discord Emojis**
+4. **Fetch Discord Assets**
    ```bash
-   node fetch-emojis.js
+   node fetch-discord-assets.js
    ```
-   This will download all emojis and sounds from your Discord server.
+   This will download all emojis, sounds, and stickers from your Discord server into separate directories.
 
 5. **Deploy to GitHub Pages**
    ```bash
@@ -119,24 +119,32 @@ A unique twist on the classic Tetris game that uses Discord server emojis as gam
 
 - **Emoji Variety**: The game automatically uses all emojis from your Discord server
 - **Sound Effects**: Automatically uses all soundboard sounds from your server
+- **Sticker Support**: Downloads Discord stickers (for future features)
 - **Particle Effects**: Progressive effects based on lines cleared (1-4 lines)
 - **Drop Speed**: Automatically adjusts based on level
+- **Asset Organization**: Emojis, sounds, and stickers are stored in separate directories with their own manifests
 
 ## 📁 Project Structure
 
 ```
 emoji-tetris/
-├── index.html          # Main game page
-├── game.js            # Core game logic
-├── controls.js        # Input handling system
-├── particles.js       # Particle effects system
-├── audio.js          # YouTube player management
-├── style.css         # Game styling
-├── fetch-emojis.js   # Discord emoji fetcher
-├── emojis/           # Downloaded emoji assets
-│   ├── manifest.json # Emoji metadata
-│   └── *.png/gif    # Emoji images
-└── README.md        # This file
+├── index.html               # Main game page
+├── game.js                 # Core game logic
+├── controls.js             # Input handling system
+├── particles.js            # Particle effects system
+├── audio.js               # YouTube player management
+├── style.css              # Game styling
+├── fetch-discord-assets.js # Discord asset fetcher
+├── emojis/                # Downloaded emoji assets
+│   ├── manifest.json      # Emoji metadata
+│   └── *.png/gif         # Emoji images
+├── sounds/                # Downloaded soundboard sounds
+│   ├── manifest.json      # Sound metadata
+│   └── *.ogg             # Sound files
+├── stickers/              # Downloaded stickers
+│   ├── manifest.json      # Sticker metadata
+│   └── *.png/gif         # Sticker images
+└── README.md             # This file
 ```
 
 ## 🔧 Technical Details

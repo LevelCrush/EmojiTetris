@@ -31,6 +31,7 @@ class EmojiTetris {
         this.softDropping = false;
         this.slowMotionEndTime = 0;
         this.piecesSpawned = 0;
+        this.rainbowBorderEndTime = 0;
         
         // Emoji pieces
         this.emojis = [];
@@ -191,10 +192,10 @@ class EmojiTetris {
     }
     
     loadSounds() {
-        // Try to load Discord sounds from manifest
-        fetch('emojis/manifest.json')
+        // Try to load Discord sounds from the sounds manifest
+        fetch('sounds/manifest.json')
             .then(res => {
-                if (!res.ok) throw new Error('Manifest not found');
+                if (!res.ok) throw new Error('Sound manifest not found');
                 return res.json();
             })
             .then(manifest => {
@@ -206,10 +207,30 @@ class EmojiTetris {
             })
             .catch((error) => {
                 console.log('Discord sounds not available:', error.message);
+                // Try loading from old location as fallback
+                this.loadSoundsFromOldLocation();
             });
     }
     
-    loadDiscordSounds(manifest) {
+    loadSoundsFromOldLocation() {
+        // Fallback to old location for backward compatibility
+        fetch('emojis/manifest.json')
+            .then(res => {
+                if (!res.ok) throw new Error('Old manifest not found');
+                return res.json();
+            })
+            .then(manifest => {
+                if (manifest.sounds && manifest.sounds.length > 0) {
+                    console.log('Loading sounds from old location (emojis/manifest.json)');
+                    this.loadDiscordSounds(manifest, true);
+                }
+            })
+            .catch((error) => {
+                console.log('No sounds available in old location either');
+            });
+    }
+    
+    loadDiscordSounds(manifest, isOldLocation = false) {
         console.log(`Loading ${manifest.sounds.length} Discord sounds...`);
         
         const soundStatusEl = document.getElementById('sound-status');
@@ -225,7 +246,8 @@ class EmojiTetris {
             if (sound.dataUrl) {
                 audio.src = sound.dataUrl;
             } else {
-                audio.src = `emojis/${sound.filename}`;
+                const soundPath = isOldLocation ? 'emojis' : 'sounds';
+                audio.src = `${soundPath}/${sound.filename}`;
             }
             
             audio.volume = 0.5; // Default volume
@@ -631,6 +653,10 @@ class EmojiTetris {
                 this.level = newLevel;
                 this.dropTime = Math.max(100, 1000 - (this.level - 1) * 100);
                 document.getElementById('level').textContent = this.level;
+                
+                // Trigger rainbow border effect for 3 seconds
+                this.rainbowBorderEndTime = Date.now() + 3000;
+                console.log(`Level up! Now level ${this.level}`);
             }
             
             // Vibrate based on lines cleared
@@ -707,6 +733,7 @@ class EmojiTetris {
         this.dropAccumulator = 0;
         this.lastTime = 0;
         this.piecesSpawned = 0;
+        this.rainbowBorderEndTime = 0;
         
         // Update UI
         this.updateScore();
@@ -842,6 +869,11 @@ class EmojiTetris {
                 }
             }
         }
+        
+        // Draw rainbow border effect when leveling up
+        if (Date.now() < this.rainbowBorderEndTime) {
+            this.drawRainbowBorder();
+        }
     }
     
     drawGhost() {
@@ -870,6 +902,103 @@ class EmojiTetris {
                 }
             }
         }
+    }
+    
+    drawRainbowBorder() {
+        const time = Date.now() / 100; // Speed of animation
+        const borderWidth = 8;
+        
+        this.ctx.save();
+        
+        // Create animated gradient
+        const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Create rainbow gradient with animated offset
+        const colors = [
+            '#ff0000', '#ff7f00', '#ffff00', '#00ff00', 
+            '#0000ff', '#4b0082', '#9400d3', '#ff0000'
+        ];
+        
+        colors.forEach((color, i) => {
+            const position = ((i / (colors.length - 1)) + time / 10) % 1;
+            gradient.addColorStop(position, color);
+        });
+        
+        // Set gradient as stroke style
+        this.ctx.strokeStyle = gradient;
+        this.ctx.lineWidth = borderWidth;
+        this.ctx.shadowBlur = 20;
+        this.ctx.shadowColor = gradient;
+        
+        // Draw animated border
+        this.ctx.strokeRect(
+            borderWidth / 2, 
+            borderWidth / 2, 
+            this.canvas.width - borderWidth, 
+            this.canvas.height - borderWidth
+        );
+        
+        // Add inner glow effect
+        const innerGlow = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
+        colors.forEach((color, i) => {
+            const position = ((i / (colors.length - 1)) + time / 10 + 0.5) % 1;
+            innerGlow.addColorStop(position, color);
+        });
+        
+        this.ctx.strokeStyle = innerGlow;
+        this.ctx.lineWidth = 2;
+        this.ctx.shadowBlur = 10;
+        this.ctx.shadowColor = innerGlow;
+        
+        // Draw inner border
+        this.ctx.strokeRect(
+            borderWidth + 2, 
+            borderWidth + 2, 
+            this.canvas.width - (borderWidth + 2) * 2, 
+            this.canvas.height - (borderWidth + 2) * 2
+        );
+        
+        // Add sparkle effect
+        const sparkleCount = 20;
+        for (let i = 0; i < sparkleCount; i++) {
+            const angle = (time / 5 + (i * 360 / sparkleCount)) % 360;
+            const radians = angle * Math.PI / 180;
+            
+            // Calculate position along the border
+            let x, y;
+            const padding = borderWidth;
+            const w = this.canvas.width - padding * 2;
+            const h = this.canvas.height - padding * 2;
+            
+            // Determine which edge the sparkle is on
+            const perimeter = 2 * (w + h);
+            const distance = (angle / 360) * perimeter;
+            
+            if (distance < w) {
+                x = padding + distance;
+                y = padding;
+            } else if (distance < w + h) {
+                x = this.canvas.width - padding;
+                y = padding + (distance - w);
+            } else if (distance < 2 * w + h) {
+                x = this.canvas.width - padding - (distance - w - h);
+                y = this.canvas.height - padding;
+            } else {
+                x = padding;
+                y = this.canvas.height - padding - (distance - 2 * w - h);
+            }
+            
+            // Draw sparkle
+            const sparkleSize = 3 + Math.sin(time / 2 + i) * 2;
+            const hue = (angle + time * 2) % 360;
+            
+            this.ctx.fillStyle = `hsla(${hue}, 100%, 70%, ${0.5 + Math.sin(time / 3 + i) * 0.5})`;
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, sparkleSize, 0, Math.PI * 2);
+            this.ctx.fill();
+        }
+        
+        this.ctx.restore();
     }
     
     drawBlock(x, y, emojiIndex, alpha = 1, isRainbow = false) {
