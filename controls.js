@@ -88,6 +88,17 @@ class Controls {
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         if (isMobile) {
             document.getElementById('mobile-controls').style.display = 'block';
+            
+            // Add toggle functionality for mobile controls
+            const toggle = document.getElementById('controls-toggle');
+            const controls = document.getElementById('mobile-controls');
+            
+            toggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                controls.classList.toggle('expanded');
+                toggle.textContent = controls.classList.contains('expanded') ? '✕' : '🎮';
+            });
         }
     }
     
@@ -116,7 +127,11 @@ class Controls {
     
     // Touch handling
     handleTouchStart(e) {
-        e.preventDefault();
+        // Only prevent default for canvas touches, not for UI elements
+        if (e.target.id === 'game-canvas') {
+            e.preventDefault();
+        }
+        
         const rect = e.target.getBoundingClientRect();
         
         for (let touch of e.changedTouches) {
@@ -129,19 +144,20 @@ class Controls {
                 startY: y,
                 currentX: x,
                 currentY: y,
-                startTime: Date.now()
+                startTime: Date.now(),
+                hasMoved: false
             });
             
-            // Determine action based on touch zone
-            const action = this.getTouchAction(x, y);
-            if (action) {
-                this.performAction(action, true);
-            }
+            // Don't immediately trigger actions on touch start
+            // Wait for touch end or movement to determine intent
         }
     }
     
     handleTouchMove(e) {
-        e.preventDefault();
+        if (e.target.id === 'game-canvas') {
+            e.preventDefault();
+        }
+        
         const rect = e.target.getBoundingClientRect();
         
         for (let touch of e.changedTouches) {
@@ -149,6 +165,7 @@ class Controls {
             if (touchData) {
                 touchData.currentX = (touch.clientX - rect.left) / rect.width;
                 touchData.currentY = (touch.clientY - rect.top) / rect.height;
+                touchData.hasMoved = true;
                 
                 // Check for swipe gestures
                 this.checkSwipeGesture(touchData);
@@ -157,17 +174,23 @@ class Controls {
     }
     
     handleTouchEnd(e) {
-        e.preventDefault();
+        if (e.target.id === 'game-canvas') {
+            e.preventDefault();
+        }
         
         for (let touch of e.changedTouches) {
             const touchIndex = this.touches.findIndex(t => t.id === touch.identifier);
             if (touchIndex !== -1) {
                 const touchData = this.touches[touchIndex];
                 
-                // Stop any actions associated with this touch
-                const action = this.getTouchAction(touchData.startX, touchData.startY);
-                if (action) {
-                    this.performAction(action, false);
+                // Only trigger tap actions if touch hasn't moved
+                if (!touchData.hasMoved && e.target.id === 'game-canvas') {
+                    const action = this.getTouchAction(touchData.startX, touchData.startY);
+                    if (action === 'rotate') {
+                        // Rotate is a single action, not continuous
+                        this.performAction(action, true);
+                        setTimeout(() => this.performAction(action, false), 50);
+                    }
                 }
                 
                 this.touches.splice(touchIndex, 1);
@@ -188,28 +211,40 @@ class Controls {
     checkSwipeGesture(touchData) {
         const dx = touchData.currentX - touchData.startX;
         const dy = touchData.currentY - touchData.startY;
-        const threshold = 0.1; // 10% of screen width/height
+        const threshold = 0.15; // 15% of screen width/height
+        const moveThreshold = 0.05; // 5% threshold for movement
         
+        // Only process swipes that exceed the threshold
         if (Math.abs(dx) > threshold || Math.abs(dy) > threshold) {
             if (Math.abs(dx) > Math.abs(dy)) {
                 // Horizontal swipe
-                if (dx > 0) {
+                if (dx > 0 && !touchData.swipedRight) {
                     this.performAction('right', true);
-                } else {
+                    setTimeout(() => this.performAction('right', false), 100);
+                    touchData.swipedRight = true;
+                    touchData.swipedLeft = false;
+                } else if (dx < 0 && !touchData.swipedLeft) {
                     this.performAction('left', true);
+                    setTimeout(() => this.performAction('left', false), 100);
+                    touchData.swipedLeft = true;
+                    touchData.swipedRight = false;
                 }
             } else {
                 // Vertical swipe
-                if (dy > 0) {
+                if (dy > 0 && !touchData.swipedDown) {
                     this.performAction('softDrop', true);
-                } else {
+                    touchData.swipedDown = true;
+                } else if (dy < 0 && !touchData.swipedUp) {
                     this.performAction('hardDrop', true);
+                    touchData.swipedUp = true;
+                    // Stop soft drop if it was active
+                    this.performAction('softDrop', false);
                 }
             }
-            
-            // Reset start position to prevent continuous triggering
-            touchData.startX = touchData.currentX;
-            touchData.startY = touchData.currentY;
+        } else if (Math.abs(dy) < moveThreshold && touchData.swipedDown) {
+            // Stop soft drop when returning to neutral position
+            this.performAction('softDrop', false);
+            touchData.swipedDown = false;
         }
     }
     

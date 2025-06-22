@@ -288,23 +288,62 @@ body {
 .mobile-controls {
     display: none;
     position: fixed;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.8);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 20px;
-    padding: 10px;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
     z-index: 1000;
+    transition: all 0.3s;
+}
+
+.mobile-controls.expanded {
+    width: auto;
+    height: auto;
+    border-radius: 20px;
+    padding: 15px;
+}
+
+.mobile-controls-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 60px;
+    height: 60px;
+    font-size: 30px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: #fff;
+}
+
+.mobile-controls.expanded .mobile-controls-toggle {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 30px;
+    height: 30px;
+    font-size: 20px;
+}
+
+.mobile-controls-content {
+    display: none;
     gap: 10px;
+    flex-wrap: wrap;
+    max-width: 250px;
+}
+
+.mobile-controls.expanded .mobile-controls-content {
+    display: flex;
 }
 
 .mobile-controls-top {
     display: none;
     position: fixed;
-    top: 80px;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 20px;
+    right: 20px;
     background: rgba(0, 0, 0, 0.8);
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 20px;
@@ -537,7 +576,7 @@ body {
     }
     
     .mobile-controls {
-        display: flex;
+        display: block;
     }
     
     .mobile-controls-top {
