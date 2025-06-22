@@ -23,7 +23,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.DEPLOY_TOKEN }}
         
     - name: Setup Node.js
       uses: actions/setup-node@v3
@@ -52,7 +52,7 @@ jobs:
     - name: Create Release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
       with:
         tag_name: v${{ steps.version.outputs.VERSION }}
         release_name: Release v${{ steps.version.outputs.VERSION }}
