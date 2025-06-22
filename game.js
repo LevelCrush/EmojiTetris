@@ -86,6 +86,20 @@ class EmojiTetris {
             })
             .then(manifest => {
                 if (manifest.emojis && manifest.emojis.length > 0) {
+                    // Remove duplicates based on emoji ID
+                    const uniqueEmojis = [];
+                    const seenIds = new Set();
+                    
+                    manifest.emojis.forEach(emoji => {
+                        if (!seenIds.has(emoji.id)) {
+                            seenIds.add(emoji.id);
+                            uniqueEmojis.push(emoji);
+                        }
+                    });
+                    
+                    console.log(`Found ${uniqueEmojis.length} unique emojis in manifest`);
+                    manifest.emojis = uniqueEmojis;
+                    
                     this.loadDiscordEmojis(manifest);
                     this.useDefaultEmojis = false;
                 } else {
@@ -105,12 +119,15 @@ class EmojiTetris {
         let loadedCount = 0;
         const emojiCount = manifest.emojis.length;
         
-        // Clear default emojis and prepare for Discord emojis
-        this.emojis = [];
+        // Keep default emojis as fallback until Discord emojis are loaded
+        // this.emojis will be replaced as we load
         this.emojiImages = {};
         
         // Update status
         this.updateEmojiStatus(`Loading ${emojiCount} Discord emojis...`);
+        
+        // Clear the emoji array only once we start loading
+        this.emojis = new Array(emojiCount);
         
         manifest.emojis.forEach((emoji, index) => {
             // Add placeholder to maintain order
@@ -137,6 +154,10 @@ class EmojiTetris {
                 if (loadedCount === emojiCount) {
                     const mode = manifest.useBase64 ? ' (base64 mode)' : '';
                     this.updateEmojiStatus(`Loaded ${emojiCount} Discord emojis!${mode}`, 'success');
+                    console.log(`Successfully loaded ${Object.keys(this.emojiImages).length} Discord emojis`);
+                    console.log(`Emoji array length: ${this.emojis.length}`);
+                    console.log(`Sample emojis: ${this.emojis.slice(0, 10).join(', ')}`);
+                    this.useDefaultEmojis = false;
                     setTimeout(() => {
                         document.getElementById('emoji-status').classList.add('hidden');
                     }, 3000);
@@ -379,6 +400,12 @@ class EmojiTetris {
             
             // Pick a random emoji from available ones
             emoji = availableEmojis[Math.floor(Math.random() * availableEmojis.length)];
+            
+            // Debug logging
+            if (this.piecesSpawned <= 5) {
+                console.log(`Piece ${this.piecesSpawned}: Selected emoji index ${emoji} from ${this.emojis.length} total emojis`);
+                console.log(`Available emojis: ${availableEmojis.length}, Recent: ${this.recentEmojis.length}`);
+            }
             
             // Add to recent emojis and keep more history for larger sets
             this.recentEmojis.push(emoji);
