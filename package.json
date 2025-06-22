@@ -4,7 +4,12 @@
   "description": "Tetris game using Discord emojis",
   "scripts": {
     "fetch-emojis": "node fetch-emojis.js",
-    "fetch" : "node fetch-discord-assets.js"
+    "fetch": "node fetch-discord-assets.js",
+    "bump": "node bump-version.js",
+    "bump:patch": "node bump-version.js patch",
+    "bump:minor": "node bump-version.js minor",
+    "bump:major": "node bump-version.js major",
+    "version": "echo Current version: $(node -p \"require('./version.json').version\")"
   },
   "dependencies": {
     "discord.js": "^14.14.1",
