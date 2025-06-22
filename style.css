@@ -191,9 +191,15 @@ body {
 
 .start-content h1 {
     font-size: 48px;
-    margin-bottom: 40px;
+    margin-bottom: 20px;
     text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
     animation: pulse 2s infinite;
+}
+
+.version-info {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 30px;
 }
 
 .play-btn {
@@ -661,4 +667,38 @@ body {
     .emoji-status, .sound-status, .video-info {
         display: none;
     }
+}
+
+/* Update notification */
+.update-notification {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.95);
+    border: 3px solid #667eea;
+    border-radius: 20px;
+    padding: 30px;
+    z-index: 10000;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(102, 126, 234, 0.8);
+    animation: updatePulse 1s infinite;
+}
+
+.update-content h3 {
+    font-size: 24px;
+    margin-bottom: 15px;
+    color: #667eea;
+}
+
+.update-content p {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+@keyframes updatePulse {
+    0% { box-shadow: 0 0 30px rgba(102, 126, 234, 0.8); }
+    50% { box-shadow: 0 0 50px rgba(102, 126, 234, 1); }
+    100% { box-shadow: 0 0 30px rgba(102, 126, 234, 0.8); }
 }
