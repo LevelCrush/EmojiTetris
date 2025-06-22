@@ -90,6 +90,26 @@
 
     <!-- Game Container -->
     <div class="game-container hidden">
+        <!-- Game Info (moved here for mobile layout) -->
+        <div class="game-info-mobile">
+            <div class="info-item">
+                <span class="label">SCORE</span>
+                <span id="score-mobile" class="value">0</span>
+            </div>
+            <div class="info-item">
+                <span class="label">LEVEL</span>
+                <span id="level-mobile" class="value">1</span>
+            </div>
+            <div class="info-item">
+                <span class="label">LINES</span>
+                <span id="lines-mobile" class="value">0</span>
+            </div>
+            <div class="info-item">
+                <span class="label">HIGH</span>
+                <span id="high-score-mobile" class="value">0</span>
+            </div>
+        </div>
+        
         <!-- Mobile Controls (Top) -->
         <div id="mobile-controls-top" class="mobile-controls-top">
             <button class="control-btn-small" data-action="pause">⏸️</button>
@@ -110,13 +130,10 @@
             
             <!-- Mobile Controls (Bottom) -->
             <div id="mobile-controls" class="mobile-controls">
-                <button class="mobile-controls-toggle" id="controls-toggle">🎮</button>
-                <div class="mobile-controls-content">
-                    <button class="control-btn" data-action="left">←</button>
-                    <button class="control-btn" data-action="down">↓</button>
-                    <button class="control-btn" data-action="right">→</button>
-                    <button class="control-btn" data-action="drop">⬇</button>
-                </div>
+                <button class="control-btn" data-action="left">←</button>
+                <button class="control-btn" data-action="down">↓</button>
+                <button class="control-btn" data-action="right">→</button>
+                <button class="control-btn" data-action="drop">⬇</button>
             </div>
         </div>
 

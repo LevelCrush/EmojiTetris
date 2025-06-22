@@ -670,6 +670,10 @@ class EmojiTetris {
                 this.dropTime = Math.max(100, 1000 - (this.level - 1) * 100);
                 document.getElementById('level').textContent = this.level;
                 
+                // Update mobile level
+                const levelMobile = document.getElementById('level-mobile');
+                if (levelMobile) levelMobile.textContent = this.level;
+                
                 // Trigger rainbow border effect for 5 seconds
                 this.rainbowBorderEndTime = Date.now() + 5000;
                 console.log(`Level up! Now level ${this.level}`);

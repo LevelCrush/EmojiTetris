@@ -91,20 +91,8 @@ class Controls {
     detectMobile() {
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         if (isMobile) {
-            document.getElementById('mobile-controls').style.display = 'block';
-            
-            // Add toggle functionality for mobile controls
-            const toggle = document.getElementById('controls-toggle');
+            // Controls are always visible on mobile now
             const controls = document.getElementById('mobile-controls');
-            
-            toggle.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                controls.classList.toggle('expanded');
-                toggle.textContent = controls.classList.contains('expanded') ? '✕' : '🎮';
-                // Add haptic feedback
-                this.vibrate(20);
-            });
             
             // Prevent touches on mobile controls from affecting game
             controls.addEventListener('touchstart', (e) => {
