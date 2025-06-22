@@ -895,6 +895,10 @@ class EmojiTetris {
     }
     
     drawHold() {
+        // Clear the canvas completely first
+        this.holdCtx.clearRect(0, 0, this.holdCanvas.width, this.holdCanvas.height);
+        
+        // Then fill with background
         this.holdCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         this.holdCtx.fillRect(0, 0, this.holdCanvas.width, this.holdCanvas.height);
         
@@ -946,6 +950,10 @@ class EmojiTetris {
     }
     
     drawNext() {
+        // Clear the canvas completely first
+        this.nextCtx.clearRect(0, 0, this.nextCanvas.width, this.nextCanvas.height);
+        
+        // Then fill with background
         this.nextCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         this.nextCtx.fillRect(0, 0, this.nextCanvas.width, this.nextCanvas.height);
         
