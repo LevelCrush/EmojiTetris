@@ -535,12 +535,12 @@ body {
     /* Show mobile game info at top */
     .game-info-mobile {
         display: flex;
-        gap: 15px;
+        gap: 12px;
         background: rgba(0, 0, 0, 0.8);
-        padding: 10px 20px;
+        padding: 8px 16px;
         border-radius: 20px;
         border: 2px solid rgba(255, 255, 255, 0.3);
-        margin-bottom: 10px;
+        margin-bottom: 8px;
         width: fit-content;
     }
     
@@ -557,7 +557,7 @@ body {
     
     .game-info-mobile .value {
         display: block;
-        font-size: 18px;
+        font-size: 16px;
         font-weight: bold;
         color: #fff;
         text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
@@ -572,33 +572,42 @@ body {
     .mobile-controls {
         display: flex;
         justify-content: center;
-        gap: 10px;
-        margin-top: 15px;
-        padding: 10px;
+        gap: 8px;
+        margin-top: 10px;
+        padding: 8px;
         background: rgba(0, 0, 0, 0.8);
-        border-radius: 25px;
+        border-radius: 20px;
         border: 2px solid rgba(255, 255, 255, 0.3);
+        width: fit-content;
+        margin-left: auto;
+        margin-right: auto;
     }
     
     .mobile-controls-top {
         display: flex;
         justify-content: center;
-        gap: 10px;
-        margin-bottom: 10px;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+    
+    .control-btn-small {
+        font-size: 14px;
+        padding: 8px 12px;
     }
     
     /* Adjust control button size for better mobile experience */
     .control-btn {
-        font-size: 32px;
-        padding: 20px 25px;
-        min-width: 80px;
+        font-size: 24px;
+        padding: 12px 18px;
+        min-width: 60px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
     
     #game-canvas, #particle-canvas {
-        width: 300px;
-        height: 600px;
-        max-width: 90vw;
-        max-height: 60vh;
+        width: 280px;
+        height: 560px;
+        max-width: 85vw;
+        max-height: 55vh;
     }
     
     /* Center the main game area */
