@@ -404,7 +404,8 @@ class EmojiTetris {
             
             let availableEmojis = [];
             for (let i = 0; i < emojiCount; i++) {
-                if (!this.recentEmojis.includes(i)) {
+                // Only add emoji indices that have loaded images
+                if (!this.recentEmojis.includes(i) && this.emojiImages[i]) {
                     availableEmojis.push(i);
                 }
             }
@@ -414,7 +415,22 @@ class EmojiTetris {
             const minAvailable = Math.min(10, Math.floor(emojiCount * 0.2));
             if (availableEmojis.length < minAvailable) {
                 this.recentEmojis = [];
-                availableEmojis = Array.from({length: emojiCount}, (_, i) => i);
+                // Only include indices with loaded images
+                availableEmojis = [];
+                for (let i = 0; i < emojiCount; i++) {
+                    if (this.emojiImages[i]) {
+                        availableEmojis.push(i);
+                    }
+                }
+            }
+            
+            // If still no available emojis with images, use any loaded image
+            if (availableEmojis.length === 0) {
+                for (let i = 0; i < emojiCount; i++) {
+                    if (this.emojiImages[i]) {
+                        availableEmojis.push(i);
+                    }
+                }
             }
             
             // Pick a random emoji from available ones
@@ -1061,15 +1077,33 @@ class EmojiTetris {
                 this.blockSize - 4
             );
         } else {
-            // Draw text emoji
-            this.ctx.font = `${this.blockSize * 0.8}px Arial`;
-            this.ctx.textAlign = 'center';
-            this.ctx.textBaseline = 'middle';
-            this.ctx.fillText(
-                this.emojis[emojiIndex],
-                blockX + this.blockSize / 2,
-                blockY + this.blockSize / 2
-            );
+            // If image not loaded, try to find a loaded emoji image
+            let foundImage = false;
+            for (let i = 0; i < this.emojis.length; i++) {
+                if (this.emojiImages[i]) {
+                    this.ctx.drawImage(
+                        this.emojiImages[i],
+                        blockX + 2,
+                        blockY + 2,
+                        this.blockSize - 4,
+                        this.blockSize - 4
+                    );
+                    foundImage = true;
+                    break;
+                }
+            }
+            
+            // Only show text as absolute last resort
+            if (!foundImage && this.useDefaultEmojis) {
+                this.ctx.font = `${this.blockSize * 0.8}px Arial`;
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.fillText(
+                    this.emojis[emojiIndex] || '🟦',
+                    blockX + this.blockSize / 2,
+                    blockY + this.blockSize / 2
+                );
+            }
         }
         
         // Draw block border
@@ -1134,14 +1168,19 @@ class EmojiTetris {
                                 scale
                             );
                         } else {
-                            this.holdCtx.font = `${scale * 0.8}px Arial`;
-                            this.holdCtx.textAlign = 'center';
-                            this.holdCtx.textBaseline = 'middle';
-                            this.holdCtx.fillText(
-                                this.emojis[emojiIndex],
-                                blockX + scale / 2,
-                                blockY + scale / 2
-                            );
+                            // Find any loaded emoji image as fallback
+                            for (let i = 0; i < this.emojis.length; i++) {
+                                if (this.emojiImages[i]) {
+                                    this.holdCtx.drawImage(
+                                        this.emojiImages[i],
+                                        blockX,
+                                        blockY,
+                                        scale,
+                                        scale
+                                    );
+                                    break;
+                                }
+                            }
                         }
                         
                         this.holdCtx.restore();
@@ -1193,14 +1232,19 @@ class EmojiTetris {
                                 scale
                             );
                         } else {
-                            this.nextCtx.font = `${scale * 0.8}px Arial`;
-                            this.nextCtx.textAlign = 'center';
-                            this.nextCtx.textBaseline = 'middle';
-                            this.nextCtx.fillText(
-                                this.emojis[emojiIndex],
-                                blockX + scale / 2,
-                                blockY + scale / 2
-                            );
+                            // Find any loaded emoji image as fallback
+                            for (let i = 0; i < this.emojis.length; i++) {
+                                if (this.emojiImages[i]) {
+                                    this.nextCtx.drawImage(
+                                        this.emojiImages[i],
+                                        blockX,
+                                        blockY,
+                                        scale,
+                                        scale
+                                    );
+                                    break;
+                                }
+                            }
                         }
                         
                         this.nextCtx.restore();
