@@ -124,7 +124,7 @@ async function fetchEmojis() {
         // Download each emoji
         let index = 0;
         for (const [id, emoji] of emojis) {
-            if (index >= 7) break; // Only need 7 emojis for Tetris
+            // Download all emojis for maximum variety
             
             const extension = emoji.animated ? 'gif' : 'png';
             const filename = `${emoji.name}_${id}.${extension}`;
