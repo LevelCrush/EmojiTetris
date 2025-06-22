@@ -471,6 +471,7 @@ body {
     border: 2px solid rgba(255, 255, 255, 0.3);
     font-size: 12px;
     transition: opacity 0.3s;
+    z-index: 5000;
 }
 
 .emoji-status.success {
@@ -502,6 +503,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+    z-index: 5000;
 }
 
 .sound-status.has-sounds {

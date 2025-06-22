@@ -35,6 +35,7 @@ class EmojiTetris {
         // Emoji pieces
         this.emojis = [];
         this.emojiImages = {};
+        this.emojisLoaded = false;
         this.loadEmojis();
         
         // Soundboard sounds
@@ -158,6 +159,7 @@ class EmojiTetris {
                     console.log(`Emoji array length: ${this.emojis.length}`);
                     console.log(`Sample emojis: ${this.emojis.slice(0, 10).join(', ')}`);
                     this.useDefaultEmojis = false;
+                    this.emojisLoaded = true;
                     setTimeout(() => {
                         document.getElementById('emoji-status').classList.add('hidden');
                     }, 3000);
@@ -383,8 +385,13 @@ class EmojiTetris {
                 this.recentEmojis = [];
             }
             
+            // Make sure we're using all loaded emojis
+            const emojiCount = this.emojisLoaded && this.emojiImages ? 
+                Math.max(this.emojis.length, Object.keys(this.emojiImages).length) : 
+                this.emojis.length;
+            
             let availableEmojis = [];
-            for (let i = 0; i < this.emojis.length; i++) {
+            for (let i = 0; i < emojiCount; i++) {
                 if (!this.recentEmojis.includes(i)) {
                     availableEmojis.push(i);
                 }
@@ -392,10 +399,10 @@ class EmojiTetris {
             
             // If we've used most emojis, reset the recent list
             // Keep more history for larger emoji sets
-            const minAvailable = Math.min(10, Math.floor(this.emojis.length * 0.2));
+            const minAvailable = Math.min(10, Math.floor(emojiCount * 0.2));
             if (availableEmojis.length < minAvailable) {
                 this.recentEmojis = [];
-                availableEmojis = Array.from({length: this.emojis.length}, (_, i) => i);
+                availableEmojis = Array.from({length: emojiCount}, (_, i) => i);
             }
             
             // Pick a random emoji from available ones
@@ -403,13 +410,14 @@ class EmojiTetris {
             
             // Debug logging
             if (this.piecesSpawned <= 5) {
-                console.log(`Piece ${this.piecesSpawned}: Selected emoji index ${emoji} from ${this.emojis.length} total emojis`);
+                console.log(`Piece ${this.piecesSpawned}: Selected emoji index ${emoji} from ${emojiCount} total emojis`);
                 console.log(`Available emojis: ${availableEmojis.length}, Recent: ${this.recentEmojis.length}`);
+                console.log(`Emojis loaded: ${this.emojisLoaded}, Images: ${Object.keys(this.emojiImages).length}`);
             }
             
             // Add to recent emojis and keep more history for larger sets
             this.recentEmojis.push(emoji);
-            const maxRecent = Math.min(20, Math.floor(this.emojis.length * 0.3));
+            const maxRecent = Math.min(20, Math.floor(emojiCount * 0.3));
             if (this.recentEmojis.length > maxRecent) {
                 this.recentEmojis.shift();
             }
