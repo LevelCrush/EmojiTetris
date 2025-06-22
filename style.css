@@ -30,6 +30,8 @@ body {
     width: 100vw;
     height: 100vh;
     pointer-events: none;
+    filter: blur(8px);
+    -webkit-filter: blur(8px);
 }
 
 .video-overlay {
