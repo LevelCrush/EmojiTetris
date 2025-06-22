@@ -256,6 +256,7 @@ class EmojiTetris {
         document.getElementById('controls-btn').addEventListener('click', () => this.showControls());
         document.getElementById('close-controls').addEventListener('click', () => this.hideControls());
         document.getElementById('settings-btn').addEventListener('click', () => this.showSettings());
+        document.getElementById('back-to-menu').addEventListener('click', () => this.backToMenu());
         
         // Make game instance globally available
         window.gameInstance = this;
@@ -308,7 +309,23 @@ class EmojiTetris {
     }
     
     showSettings() {
+        // Hide start screen when showing settings
+        document.getElementById('start-screen').classList.add('hidden');
+        document.querySelector('.game-container').classList.remove('hidden');
+        
+        // Show settings panel
         document.getElementById('settings-content').classList.remove('hidden');
+    }
+    
+    backToMenu() {
+        // Hide settings
+        document.getElementById('settings-content').classList.add('hidden');
+        
+        // Show start screen if game hasn't started
+        if (!this.gameStarted) {
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.querySelector('.game-container').classList.add('hidden');
+        }
     }
     
     createPiece() {
@@ -317,20 +334,42 @@ class EmojiTetris {
         
         this.piecesSpawned++;
         
-        // Special rainbow piece every 10 pieces (20% chance)
-        const isRainbow = this.piecesSpawned % 10 === 0 && Math.random() < 0.2;
+        // Special rainbow piece every 7 pieces (30% chance)
+        const isRainbow = this.piecesSpawned % 7 === 0 && Math.random() < 0.3;
         
-        // More randomness in emoji selection
+        // Always randomize emoji selection for variety
         let emoji;
         if (isRainbow) {
             // Rainbow piece - will cycle through emojis
             emoji = 'rainbow';
-        } else if (Math.random() < 0.15) {
-            // 15% chance to use any emoji (increased from 10%)
-            emoji = Math.floor(Math.random() * this.emojis.length);
         } else {
-            // 85% chance to use weighted random (favors variety)
-            emoji = this.getWeightedRandomEmoji();
+            // Always use random emoji selection
+            // Don't repeat the last 2 emojis used
+            if (!this.recentEmojis) {
+                this.recentEmojis = [];
+            }
+            
+            let availableEmojis = [];
+            for (let i = 0; i < this.emojis.length; i++) {
+                if (!this.recentEmojis.includes(i)) {
+                    availableEmojis.push(i);
+                }
+            }
+            
+            // If we've used most emojis, reset the recent list
+            if (availableEmojis.length < 3) {
+                this.recentEmojis = [];
+                availableEmojis = Array.from({length: this.emojis.length}, (_, i) => i);
+            }
+            
+            // Pick a random emoji from available ones
+            emoji = availableEmojis[Math.floor(Math.random() * availableEmojis.length)];
+            
+            // Add to recent emojis and keep only last 3
+            this.recentEmojis.push(emoji);
+            if (this.recentEmojis.length > 3) {
+                this.recentEmojis.shift();
+            }
         }
         
         return {
@@ -343,38 +382,6 @@ class EmojiTetris {
         };
     }
     
-    getWeightedRandomEmoji() {
-        // Track emoji usage to encourage variety
-        if (!this.emojiUsageCount) {
-            this.emojiUsageCount = new Array(this.emojis.length).fill(0);
-        }
-        
-        // Calculate weights (less used emojis get higher weight)
-        const totalUsage = this.emojiUsageCount.reduce((a, b) => a + b, 0) || 1;
-        const avgUsage = totalUsage / this.emojis.length;
-        
-        const weights = this.emojiUsageCount.map(count => {
-            // Inverse weight - less used emojis have higher chance
-            return Math.max(1, avgUsage * 2 - count);
-        });
-        
-        // Weighted random selection
-        const totalWeight = weights.reduce((a, b) => a + b, 0);
-        let random = Math.random() * totalWeight;
-        
-        for (let i = 0; i < weights.length; i++) {
-            random -= weights[i];
-            if (random <= 0) {
-                this.emojiUsageCount[i]++;
-                return i;
-            }
-        }
-        
-        // Fallback
-        const fallback = Math.floor(Math.random() * this.emojis.length);
-        this.emojiUsageCount[fallback]++;
-        return fallback;
-    }
     
     spawnPiece() {
         this.currentPiece = this.nextPieces.shift();
@@ -665,8 +672,8 @@ class EmojiTetris {
         document.getElementById('level').textContent = this.level;
         document.getElementById('game-over-modal').classList.add('hidden');
         
-        // Reset emoji usage tracking
-        this.emojiUsageCount = new Array(this.emojis.length).fill(0);
+        // Reset emoji tracking
+        this.recentEmojis = [];
         
         // Clear canvases
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
