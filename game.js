@@ -103,43 +103,56 @@ class EmojiTetris {
     
     loadDiscordEmojis(manifest) {
         let loadedCount = 0;
-        const emojiCount = Math.min(7, manifest.emojis.length);
+        const emojiCount = manifest.emojis.length;
+        
+        // Clear default emojis and prepare for Discord emojis
+        this.emojis = [];
+        this.emojiImages = {};
         
         // Update status
         this.updateEmojiStatus(`Loading ${emojiCount} Discord emojis...`);
         
-        manifest.emojis.forEach((emoji) => {
-            if (emoji.index !== undefined && emoji.index < 7) {
-                const img = new Image();
+        manifest.emojis.forEach((emoji, index) => {
+            // Add placeholder to maintain order
+            this.emojis[index] = `[${emoji.name}]`;
+            
+            const img = new Image();
+            
+            // Use base64 data URL if available, otherwise load from file
+            if (emoji.dataUrl) {
+                img.src = emoji.dataUrl;
+            } else {
+                img.src = `emojis/${emoji.filename}`;
+            }
+            
+            img.onload = () => {
+                this.emojiImages[index] = img;
+                loadedCount++;
                 
-                // Use base64 data URL if available, otherwise load from file
-                if (emoji.dataUrl) {
-                    img.src = emoji.dataUrl;
-                } else {
-                    img.src = `emojis/${emoji.filename}`;
+                // Update status periodically
+                if (loadedCount % 10 === 0 || loadedCount === emojiCount) {
+                    this.updateEmojiStatus(`Loading Discord emojis... ${loadedCount}/${emojiCount}`);
                 }
                 
-                img.onload = () => {
-                    this.emojiImages[emoji.index] = img;
-                    loadedCount++;
-                    
-                    if (loadedCount === emojiCount) {
-                        const mode = manifest.useBase64 ? ' (base64 mode)' : '';
-                        this.updateEmojiStatus(`Loaded ${emojiCount} Discord emojis!${mode}`, 'success');
-                        setTimeout(() => {
-                            document.getElementById('emoji-status').classList.add('hidden');
-                        }, 3000);
-                    }
-                };
-                img.onerror = () => {
-                    console.error(`Failed to load emoji: ${emoji.name}`);
-                    loadedCount++;
-                    
-                    if (loadedCount === emojiCount) {
-                        this.updateEmojiStatus('Some emojis failed to load', 'default');
-                    }
-                };
-            }
+                if (loadedCount === emojiCount) {
+                    const mode = manifest.useBase64 ? ' (base64 mode)' : '';
+                    this.updateEmojiStatus(`Loaded ${emojiCount} Discord emojis!${mode}`, 'success');
+                    setTimeout(() => {
+                        document.getElementById('emoji-status').classList.add('hidden');
+                    }, 3000);
+                }
+            };
+            img.onerror = () => {
+                console.error(`Failed to load emoji: ${emoji.name}`);
+                loadedCount++;
+                
+                if (loadedCount === emojiCount) {
+                    this.updateEmojiStatus(`Loaded ${Object.keys(this.emojiImages).length}/${emojiCount} emojis`, 'default');
+                    setTimeout(() => {
+                        document.getElementById('emoji-status').classList.add('hidden');
+                    }, 3000);
+                }
+            };
         });
     }
     
@@ -357,7 +370,9 @@ class EmojiTetris {
             }
             
             // If we've used most emojis, reset the recent list
-            if (availableEmojis.length < 3) {
+            // Keep more history for larger emoji sets
+            const minAvailable = Math.min(10, Math.floor(this.emojis.length * 0.2));
+            if (availableEmojis.length < minAvailable) {
                 this.recentEmojis = [];
                 availableEmojis = Array.from({length: this.emojis.length}, (_, i) => i);
             }
@@ -365,9 +380,10 @@ class EmojiTetris {
             // Pick a random emoji from available ones
             emoji = availableEmojis[Math.floor(Math.random() * availableEmojis.length)];
             
-            // Add to recent emojis and keep only last 3
+            // Add to recent emojis and keep more history for larger sets
             this.recentEmojis.push(emoji);
-            if (this.recentEmojis.length > 3) {
+            const maxRecent = Math.min(20, Math.floor(this.emojis.length * 0.3));
+            if (this.recentEmojis.length > maxRecent) {
                 this.recentEmojis.shift();
             }
         }
