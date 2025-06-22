@@ -2,9 +2,10 @@
 const CURRENT_VERSION = '1.0.0';
 const VERSION_CHECK_INTERVAL = 60000; // Check every minute
 let versionCheckTimer = null;
+let updateNotificationShown = false;
 
 // Check version on load
-async function checkVersion() {
+async function checkVersion(isInitialLoad = false) {
     try {
         // Add cache buster to ensure we get the latest version
         const response = await fetch(`version.json?t=${Date.now()}`);
@@ -26,13 +27,16 @@ async function checkVersion() {
         if (latestVersion !== CURRENT_VERSION) {
             console.log(`Version mismatch! Current: ${CURRENT_VERSION}, Latest: ${latestVersion}`);
             
-            // Show update notification
-            showUpdateNotification(latestVersion);
-            
-            // Force reload with cache busting after a short delay
-            setTimeout(() => {
-                forceReload();
-            }, 3000);
+            if (isInitialLoad) {
+                // Auto-reload on initial page load
+                showUpdateNotification(latestVersion, true);
+                setTimeout(() => {
+                    forceReload();
+                }, 3000);
+            } else {
+                // Show update button for periodic checks
+                showUpdateNotification(latestVersion, false);
+            }
         } else {
             console.log(`Version check passed: ${CURRENT_VERSION}`);
         }
@@ -42,17 +46,43 @@ async function checkVersion() {
 }
 
 // Show update notification
-function showUpdateNotification(newVersion) {
+function showUpdateNotification(newVersion, autoReload = false) {
+    // Don't show duplicate notifications
+    if (updateNotificationShown && !autoReload) {
+        return;
+    }
+    
+    // Remove any existing notification
+    const existingNotification = document.querySelector('.update-notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+    
     const notification = document.createElement('div');
     notification.className = 'update-notification';
     notification.innerHTML = `
         <div class="update-content">
             <h3>🚀 Update Available!</h3>
             <p>A new version (v${newVersion}) is available.</p>
-            <p>Reloading in 3 seconds...</p>
+            ${autoReload ? 
+                '<p>Reloading in 3 seconds...</p>' : 
+                '<button id="update-btn" class="update-btn">Update Now</button>'
+            }
         </div>
     `;
     document.body.appendChild(notification);
+    
+    updateNotificationShown = true;
+    
+    // Add click handler for manual update
+    if (!autoReload) {
+        const updateBtn = document.getElementById('update-btn');
+        if (updateBtn) {
+            updateBtn.addEventListener('click', () => {
+                forceReload();
+            });
+        }
+    }
 }
 
 // Force reload with cache busting
@@ -80,12 +110,12 @@ function forceReload() {
 
 // Start periodic version checking
 function startVersionChecking() {
-    // Initial check
-    checkVersion();
+    // Initial check with auto-reload
+    checkVersion(true);
     
-    // Set up periodic checks
+    // Set up periodic checks (without auto-reload)
     versionCheckTimer = setInterval(() => {
-        checkVersion();
+        checkVersion(false);
     }, VERSION_CHECK_INTERVAL);
 }
 
@@ -113,7 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // Also check on visibility change
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden && !window.gameInstance?.gameStarted) {
-        checkVersion();
+        // Don't auto-reload on visibility change
+        checkVersion(false);
     }
 });
 
