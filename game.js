@@ -899,7 +899,7 @@ class EmojiTetris {
                         ghost.x + x, 
                         ghost.y + y, 
                         ghost.emoji === 'rainbow' ? 0 : ghost.emoji, 
-                        0.3,
+                        0.15,
                         ghost.isRainbow || isLevelUpRainbow
                     );
                 }
@@ -1037,9 +1037,13 @@ class EmojiTetris {
                 this.ctx.shadowColor = `hsl(${hue}, 100%, 50%)`;
             }
         } else {
-            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            // No background fill for normal blocks to match preview brightness
         }
-        this.ctx.fillRect(blockX, blockY, this.blockSize, this.blockSize);
+        
+        // Only fill background for rainbow blocks
+        if (isRainbow) {
+            this.ctx.fillRect(blockX, blockY, this.blockSize, this.blockSize);
+        }
         
         // For rainbow pieces, cycle through emojis
         if (isRainbow) {

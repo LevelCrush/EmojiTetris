@@ -57,10 +57,14 @@ class Controls {
         document.querySelectorAll('.control-btn, .control-btn-small').forEach(btn => {
             btn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 this.handleMobileButton(btn.dataset.action, true);
+                // Add haptic feedback
+                this.vibrate(10);
             });
             btn.addEventListener('touchend', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 this.handleMobileButton(btn.dataset.action, false);
             });
             btn.addEventListener('mousedown', (e) => {
@@ -98,6 +102,25 @@ class Controls {
                 e.stopPropagation();
                 controls.classList.toggle('expanded');
                 toggle.textContent = controls.classList.contains('expanded') ? '✕' : '🎮';
+                // Add haptic feedback
+                this.vibrate(20);
+            });
+            
+            // Prevent touches on mobile controls from affecting game
+            controls.addEventListener('touchstart', (e) => {
+                if (e.target !== document.getElementById('game-canvas')) {
+                    e.stopPropagation();
+                }
+            });
+            controls.addEventListener('touchmove', (e) => {
+                if (e.target !== document.getElementById('game-canvas')) {
+                    e.stopPropagation();
+                }
+            });
+            controls.addEventListener('touchend', (e) => {
+                if (e.target !== document.getElementById('game-canvas')) {
+                    e.stopPropagation();
+                }
             });
         }
     }
@@ -342,32 +365,41 @@ class Controls {
                 case 'left':
                     this.game.movePiece(-1, 0);
                     this.startAutoRepeat('left', () => this.game.movePiece(-1, 0));
+                    this.vibrate(5);
                     break;
                 case 'right':
                     this.game.movePiece(1, 0);
                     this.startAutoRepeat('right', () => this.game.movePiece(1, 0));
+                    this.vibrate(5);
                     break;
                 case 'down':
                     this.game.movePiece(0, 1);
                     this.startAutoRepeat('down', () => this.game.movePiece(0, 1));
+                    this.vibrate(5);
                     break;
                 case 'rotate':
                     this.game.rotatePiece();
+                    this.vibrate(10);
                     break;
                 case 'hold':
                     this.game.holdPiece();
+                    this.vibrate(15);
                     break;
                 case 'pause':
                     this.game.togglePause();
+                    this.vibrate(20);
                     break;
                 case 'hardDrop':
                     this.game.hardDrop();
+                    this.vibrate(25);
                     break;
                 case 'softDrop':
                     this.game.startSoftDrop();
+                    this.vibrate(5);
                     break;
                 case 'drop':
                     this.game.hardDrop();
+                    this.vibrate(25);
                     break;
             }
         } else {
