@@ -247,14 +247,6 @@ function updateMuteButton() {
 
 // Initialize controls
 document.addEventListener('DOMContentLoaded', () => {
-    // Settings panel
-    const settingsToggle = document.getElementById('settings-toggle');
-    const settingsContent = document.getElementById('settings-content');
-    
-    settingsToggle.addEventListener('click', () => {
-        settingsContent.classList.toggle('hidden');
-    });
-    
     // YouTube URL input
     const youtubeInput = document.getElementById('youtube-url');
     const applyBtn = document.getElementById('apply-video');
@@ -263,7 +255,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const url = youtubeInput.value.trim();
         if (url) {
             loadCustomVideo(url);
-            settingsContent.classList.add('hidden');
         }
     });
     
@@ -280,7 +271,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadCustomVideo(DEFAULT_PLAYLIST_URL);
                 }
             }
-            settingsContent.classList.add('hidden');
         });
     });
     
@@ -317,12 +307,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     }
     
-    // Close settings when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!settingsToggle.contains(e.target) && !settingsContent.contains(e.target)) {
-            settingsContent.classList.add('hidden');
-        }
-    });
 });
 
 // Export for use in game

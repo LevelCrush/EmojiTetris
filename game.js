@@ -292,7 +292,7 @@ class EmojiTetris {
         document.getElementById('controls-btn').addEventListener('click', () => this.showControls());
         document.getElementById('close-controls').addEventListener('click', () => this.hideControls());
         document.getElementById('settings-btn').addEventListener('click', () => this.showSettings());
-        document.getElementById('back-to-menu').addEventListener('click', () => this.backToMenu());
+        document.getElementById('close-settings').addEventListener('click', () => this.hideSettings());
         
         // Make game instance globally available
         window.gameInstance = this;
@@ -345,23 +345,13 @@ class EmojiTetris {
     }
     
     showSettings() {
-        // Hide start screen when showing settings
-        document.getElementById('start-screen').classList.add('hidden');
-        document.querySelector('.game-container').classList.remove('hidden');
-        
-        // Show settings panel
-        document.getElementById('settings-content').classList.remove('hidden');
+        // Show settings modal
+        document.getElementById('settings-modal').classList.remove('hidden');
     }
     
-    backToMenu() {
-        // Hide settings
-        document.getElementById('settings-content').classList.add('hidden');
-        
-        // Show start screen if game hasn't started
-        if (!this.gameStarted) {
-            document.getElementById('start-screen').classList.remove('hidden');
-            document.querySelector('.game-container').classList.add('hidden');
-        }
+    hideSettings() {
+        // Hide settings modal
+        document.getElementById('settings-modal').classList.add('hidden');
     }
     
     createPiece() {

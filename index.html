@@ -14,36 +14,45 @@
         <div class="video-overlay"></div>
     </div>
 
-    <!-- Settings Panel -->
-    <div id="settings-panel" class="settings-panel">
-        <button id="settings-toggle" class="settings-toggle">⚙️</button>
-        <div id="settings-content" class="settings-content hidden">
-            <h3>Settings</h3>
-            <div class="settings-group">
-                <label for="youtube-url">YouTube URL/Playlist:</label>
-                <input type="text" id="youtube-url" placeholder="Enter YouTube URL or Playlist ID">
-                <button id="apply-video">Apply</button>
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>⚙️ Settings</h2>
+            
+            <!-- Volume Settings -->
+            <div class="settings-section">
+                <h3>🔊 Audio</h3>
+                <div class="settings-group">
+                    <label>Volume:</label>
+                    <div class="volume-control-inline">
+                        <button id="mute-toggle">🔊</button>
+                        <input type="range" id="volume-slider" min="0" max="100" value="50">
+                        <span id="volume-display">50%</span>
+                    </div>
+                </div>
             </div>
-            <div class="settings-group">
-                <button class="playlist-btn" data-action="default">Reset to Default Playlist</button>
+            
+            <!-- YouTube Settings -->
+            <div class="settings-section">
+                <h3>🎵 YouTube Music</h3>
+                <div class="settings-group">
+                    <label for="youtube-url">YouTube URL/Playlist:</label>
+                    <input type="text" id="youtube-url" placeholder="Enter YouTube URL or Playlist ID">
+                    <button id="apply-video">Apply</button>
+                </div>
+                <div class="settings-group">
+                    <button class="playlist-btn" data-action="default">Reset to Default Playlist</button>
+                </div>
+                <div class="settings-group">
+                    <small style="color: #aaa;">
+                        Tip: Enter comma-separated video IDs for a custom playlist<br>
+                        Example: dQw4w9WgXcQ,9bZkp7q19f0,kJQP7kiw5Fk
+                    </small>
+                </div>
             </div>
-            <div class="settings-group">
-                <small style="color: #aaa;">
-                    Tip: Enter comma-separated video IDs for a custom playlist<br>
-                    Example: dQw4w9WgXcQ,9bZkp7q19f0,kJQP7kiw5Fk
-                </small>
-            </div>
-            <div class="settings-group">
-                <button id="back-to-menu" class="playlist-btn">Back to Menu</button>
-            </div>
+            
+            <button id="close-settings" class="modal-btn">Close</button>
         </div>
-    </div>
-
-    <!-- Volume Control -->
-    <div id="volume-control" class="volume-control">
-        <button id="mute-toggle">🔊</button>
-        <input type="range" id="volume-slider" min="0" max="100" value="50">
-        <span id="volume-display">50%</span>
     </div>
 
     <!-- Start Screen -->

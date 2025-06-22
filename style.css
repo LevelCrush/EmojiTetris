@@ -42,45 +42,6 @@ body {
     z-index: -1;
 }
 
-/* Settings Panel */
-.settings-panel {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 1000;
-}
-
-.settings-toggle {
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    color: #fff;
-    font-size: 24px;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.settings-toggle:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: rotate(45deg);
-}
-
-.settings-content {
-    position: absolute;
-    top: 60px;
-    left: 0;
-    background: rgba(0, 0, 0, 0.9);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    padding: 20px;
-    min-width: 300px;
-    transition: opacity 0.3s;
-}
-
-.settings-content.hidden {
-    display: none;
-}
 
 .settings-group {
     margin-bottom: 15px;
@@ -124,20 +85,6 @@ body {
     margin-bottom: 5px;
 }
 
-/* Volume Control */
-.volume-control {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(0, 0, 0, 0.8);
-    padding: 10px 15px;
-    border-radius: 25px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    z-index: 1000;
-}
 
 #mute-toggle {
     background: none;
@@ -293,6 +240,28 @@ body {
 .controls-section h3 {
     color: #667eea;
     margin-bottom: 10px;
+}
+
+/* Settings Sections */
+.settings-section {
+    margin: 20px 0;
+    text-align: left;
+}
+
+.settings-section h3 {
+    color: #667eea;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.volume-control-inline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px 15px;
+    border-radius: 25px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .control-item {
