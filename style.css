@@ -513,7 +513,12 @@ body {
     border-radius: 30px;
     cursor: pointer;
     margin-top: 20px;
+    margin-right: 10px;
     transition: all 0.3s;
+}
+
+.modal button:last-child {
+    margin-right: 0;
 }
 
 .modal button:hover {
@@ -1062,6 +1067,22 @@ body {
 .settings-btn:hover {
     background: rgba(102, 126, 234, 1);
     transform: scale(1.02);
+}
+
+@keyframes highlight {
+    0% { 
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+    50% { 
+        background: rgba(102, 126, 234, 0.3);
+        border-color: rgba(102, 126, 234, 0.8);
+        transform: scale(1.02);
+    }
+    100% { 
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
 }
 
 /* Mobile adjustments */

@@ -374,6 +374,7 @@ class EmojiTetris {
         const closeControlsBtn = document.getElementById('close-controls');
         const settingsBtn = document.getElementById('settings-btn');
         const closeSettingsBtn = document.getElementById('close-settings');
+        const pauseSettingsBtn = document.getElementById('pause-settings-btn');
         
         if (playBtn) playBtn.addEventListener('click', () => this.startGame());
         if (restartBtn) restartBtn.addEventListener('click', () => this.restart());
@@ -382,6 +383,7 @@ class EmojiTetris {
         if (closeControlsBtn) closeControlsBtn.addEventListener('click', () => this.hideControls());
         if (settingsBtn) settingsBtn.addEventListener('click', () => this.showSettings());
         if (closeSettingsBtn) closeSettingsBtn.addEventListener('click', () => this.hideSettings());
+        if (pauseSettingsBtn) pauseSettingsBtn.addEventListener('click', () => this.showSettingsFromPause());
         
         // Make game instance globally available
         window.gameInstance = this;
@@ -447,6 +449,17 @@ class EmojiTetris {
     hideSettings() {
         // Hide settings modal
         document.getElementById('settings-modal').classList.add('hidden');
+        
+        // If game is paused, show pause modal again
+        if (this.paused && this.gameStarted && !this.gameOver) {
+            document.getElementById('pause-modal').classList.remove('hidden');
+        }
+    }
+    
+    showSettingsFromPause() {
+        // Hide pause modal and show settings
+        document.getElementById('pause-modal').classList.add('hidden');
+        this.showSettings();
     }
     
     createPiece() {

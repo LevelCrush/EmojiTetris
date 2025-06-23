@@ -111,6 +111,10 @@ class SoundVolumeManager {
     loadExistingVolumes() {
         const soundVolumes = window.settingsManager.get('soundVolumes') || {};
         
+        // Clear the list first
+        this.volumesListEl.innerHTML = '';
+        this.selectedSounds.clear();
+        
         Object.entries(soundVolumes).forEach(([soundName, volume]) => {
             if (volume !== 100) { // Only show non-default volumes
                 const sound = this.sounds.find(s => s.name === soundName);
@@ -256,6 +260,23 @@ class SoundVolumeManager {
     }
     
     selectSound(sound) {
+        // Check if sound is already selected
+        if (this.selectedSounds.has(sound.name)) {
+            // Scroll to existing sound control
+            const existingItem = this.volumesListEl.querySelector(`[data-sound-name="${sound.name}"]`);
+            if (existingItem) {
+                existingItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Add a highlight effect
+                existingItem.style.animation = 'highlight 1s ease';
+                setTimeout(() => {
+                    existingItem.style.animation = '';
+                }, 1000);
+            }
+            this.searchInput.value = '';
+            this.hideAutocomplete();
+            return;
+        }
+        
         this.selectedSounds.add(sound.name);
         this.addSoundVolumeControl(sound);
         this.searchInput.value = '';
