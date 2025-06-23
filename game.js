@@ -25,7 +25,7 @@ class EmojiTetris {
         this.score = 0;
         this.level = 1;
         this.lines = 0;
-        this.highScore = parseInt(localStorage.getItem('highScore') || 0);
+        this.highScore = window.settingsManager ? window.settingsManager.get('highScore') : parseInt(localStorage.getItem('highScore') || 0);
         this.gameOver = false;
         this.paused = false;
         this.dropTime = 1000;
@@ -278,6 +278,11 @@ class EmojiTetris {
     playRandomSound() {
         if (this.sounds.length === 0) return;
         
+        // Check if effects are muted
+        if (window.settingsManager && window.settingsManager.get('effectsMuted')) {
+            return;
+        }
+        
         // Pick a random sound
         const randomIndex = Math.floor(Math.random() * this.sounds.length);
         const soundData = this.soundAudios[randomIndex];
@@ -285,10 +290,14 @@ class EmojiTetris {
         if (soundData && soundData.audio) {
             // Clone the audio to allow overlapping sounds
             const audio = soundData.audio.cloneNode();
-            audio.volume = (window.audioManager?.getVolume() || 50) / 100; // Use the game volume
+            
+            // Use effects volume from settings
+            const volume = window.settingsManager ? window.settingsManager.get('effectsVolume') : 50;
+            audio.volume = volume / 100;
+            
             audio.play().catch(e => console.log('Sound play failed:', e));
             
-            console.log(`Playing sound: ${soundData.name}`);
+            console.log(`Playing sound: ${soundData.name} at volume ${volume}%`);
             
             // Show sound name briefly
             const soundStatusEl = document.getElementById('sound-status');
@@ -308,6 +317,8 @@ class EmojiTetris {
     init() {
         // Update high score display
         document.getElementById('high-score').textContent = this.highScore;
+        const highScoreMobile = document.getElementById('high-score-mobile');
+        if (highScoreMobile) highScoreMobile.textContent = this.highScore;
         
         // UI event listeners
         document.getElementById('play-btn').addEventListener('click', () => this.startGame());
@@ -704,10 +715,23 @@ class EmojiTetris {
         document.getElementById('score').textContent = this.score;
         document.getElementById('lines').textContent = this.lines;
         
+        // Update mobile score displays
+        const scoreMobile = document.getElementById('score-mobile');
+        const linesMobile = document.getElementById('lines-mobile');
+        const highScoreMobile = document.getElementById('high-score-mobile');
+        
+        if (scoreMobile) scoreMobile.textContent = this.score;
+        if (linesMobile) linesMobile.textContent = this.lines;
+        
         if (this.score > this.highScore) {
             this.highScore = this.score;
-            localStorage.setItem('highScore', this.highScore);
+            if (window.settingsManager) {
+                window.settingsManager.set('highScore', this.highScore);
+            } else {
+                localStorage.setItem('highScore', this.highScore);
+            }
             document.getElementById('high-score').textContent = this.highScore;
+            if (highScoreMobile) highScoreMobile.textContent = this.highScore;
         }
     }
     

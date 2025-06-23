@@ -2,8 +2,6 @@
 let player;
 let isPlayerReady = false;
 window.player = null; // Make player globally accessible
-let currentVolume = 50;
-let isMuted = false;
 let currentVideoIndex = 0;
 let isPlayingPlaylist = false;
 let customVideoIds = [];
@@ -78,7 +76,14 @@ function onYouTubeIframeAPIReady() {
 function onPlayerReady(event) {
     isPlayerReady = true;
     window.player = player; // Make player globally accessible
-    player.setVolume(currentVolume);
+    
+    // Apply saved volume settings
+    if (window.settingsManager) {
+        player.setVolume(window.settingsManager.get('youtubeVolume'));
+        if (window.settingsManager.get('youtubeMuted')) {
+            player.mute();
+        }
+    }
     
     // Show initial video info
     updateVideoInfo(`♪ Playing default playlist`);
@@ -89,7 +94,7 @@ function onPlayerReady(event) {
 }
 
 function unmuteinitial() {
-    if (player && !isMuted) {
+    if (player && window.settingsManager && !window.settingsManager.get('youtubeMuted')) {
         player.unMute();
     }
 }
@@ -245,8 +250,10 @@ function loadCustomVideo(url) {
         updateVideoInfo(`♪ Loading video: ${parsed.id}`);
     }
     
-    // Save to localStorage
-    localStorage.setItem('customYouTubeUrl', url);
+    // Save to settings
+    if (window.settingsManager) {
+        window.settingsManager.set('youtubeUrl', url);
+    }
     
     // Clear the input field after applying
     const input = document.getElementById('youtube-url');
@@ -257,28 +264,19 @@ function loadCustomVideo(url) {
 
 // Volume Control
 function setVolume(volume) {
-    currentVolume = volume;
     if (player && isPlayerReady) {
         player.setVolume(volume);
     }
-    localStorage.setItem('gameVolume', volume);
 }
 
-function toggleMute() {
-    isMuted = !isMuted;
+function setMuted(muted) {
     if (player && isPlayerReady) {
-        if (isMuted) {
+        if (muted) {
             player.mute();
         } else {
             player.unMute();
         }
     }
-    updateMuteButton();
-}
-
-function updateMuteButton() {
-    const muteBtn = document.getElementById('mute-toggle');
-    muteBtn.textContent = isMuted ? '🔇' : '🔊';
 }
 
 // Initialize controls
@@ -320,7 +318,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Reset to default playlist
                 customVideoIds = [];
                 currentVideoIndex = 0;
-                localStorage.removeItem('customYouTubeUrl');
+                if (window.settingsManager) {
+                    window.settingsManager.set('youtubeUrl', '');
+                }
                 if (player && isPlayerReady) {
                     // Load the default playlist
                     loadCustomVideo(DEFAULT_PLAYLIST_URL);
@@ -329,37 +329,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
-    // Volume control
-    const volumeSlider = document.getElementById('volume-slider');
-    const volumeDisplay = document.getElementById('volume-display');
-    const muteToggle = document.getElementById('mute-toggle');
-    
-    // Load saved volume
-    const savedVolume = localStorage.getItem('gameVolume');
-    if (savedVolume) {
-        currentVolume = parseInt(savedVolume);
-        volumeSlider.value = currentVolume;
-        volumeDisplay.textContent = `${currentVolume}%`;
-    }
-    
-    volumeSlider.addEventListener('input', (e) => {
-        const volume = e.target.value;
-        setVolume(volume);
-        volumeDisplay.textContent = `${volume}%`;
-    });
-    
-    muteToggle.addEventListener('click', toggleMute);
-    
-    // Load saved custom URL
-    const savedUrl = localStorage.getItem('customYouTubeUrl');
-    if (savedUrl) {
-        youtubeInput.value = savedUrl;
-        // Will be loaded when player is ready
-        setTimeout(() => {
-            if (isPlayerReady) {
-                loadCustomVideo(savedUrl);
-            }
-        }, 1000);
+    // Load saved custom URL from settings
+    if (window.settingsManager) {
+        const savedUrl = window.settingsManager.get('youtubeUrl');
+        if (savedUrl) {
+            youtubeInput.value = savedUrl;
+            // Will be loaded when player is ready
+            setTimeout(() => {
+                if (isPlayerReady) {
+                    loadCustomVideo(savedUrl);
+                }
+            }, 1000);
+        }
     }
     
 });
@@ -367,10 +348,9 @@ document.addEventListener('DOMContentLoaded', () => {
 // Export for use in game
 window.audioManager = {
     setVolume,
-    toggleMute,
+    setMuted,
     loadCustomVideo,
     isReady: () => isPlayerReady,
-    getVolume: () => currentVolume,
     playNextVideo,
     playRandomVideo
 };
