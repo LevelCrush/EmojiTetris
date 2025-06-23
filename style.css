@@ -223,6 +223,19 @@ body {
     box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
 }
 
+.play-btn:disabled,
+.play-btn.loading {
+    background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.play-btn:disabled:hover,
+.play-btn.loading:hover {
+    transform: scale(1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
 .menu-btn {
     background: rgba(255, 255, 255, 0.1);
     border: 2px solid rgba(255, 255, 255, 0.3);

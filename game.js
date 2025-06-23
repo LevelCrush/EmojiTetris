@@ -45,7 +45,12 @@ class EmojiTetris {
         // Soundboard sounds
         this.sounds = [];
         this.soundAudios = {};
+        this.soundsLoaded = false;
         this.loadSounds();
+        
+        // Track overall loading state
+        this.assetsLoaded = false;
+        this.updateLoadingState();
         
         // Particle system
         this.particleSystem = new ParticleSystem(document.getElementById('particle-canvas'));
@@ -289,6 +294,7 @@ class EmojiTetris {
             
             this.useDefaultEmojis = false;
             this.emojisLoaded = true;
+            this.updateLoadingState();
             
             setTimeout(() => {
                 document.getElementById('emoji-status').classList.add('hidden');
@@ -307,6 +313,35 @@ class EmojiTetris {
         }
     }
     
+    updateLoadingState() {
+        const playBtn = document.getElementById('play-btn');
+        
+        if (this.emojisLoaded && this.soundsLoaded) {
+            this.assetsLoaded = true;
+            
+            // Enable play button
+            if (playBtn) {
+                playBtn.disabled = false;
+                playBtn.textContent = 'Play Game';
+                playBtn.classList.remove('loading');
+            }
+            
+            console.log('All assets loaded! Game ready to play.');
+        } else {
+            // Show loading state
+            if (playBtn) {
+                playBtn.disabled = true;
+                playBtn.classList.add('loading');
+                
+                const loadingItems = [];
+                if (!this.emojisLoaded) loadingItems.push('emojis');
+                if (!this.soundsLoaded) loadingItems.push('sounds');
+                
+                playBtn.textContent = `Loading ${loadingItems.join(' & ')}...`;
+            }
+        }
+    }
+    
     loadSounds() {
         // Try to load Discord sounds from the sounds manifest
         fetch('sounds/manifest.json')
@@ -319,6 +354,8 @@ class EmojiTetris {
                     this.loadDiscordSounds(manifest);
                 } else {
                     console.log('No Discord sounds found in manifest');
+                    this.soundsLoaded = true;
+                    this.updateLoadingState();
                 }
             })
             .catch((error) => {
@@ -339,10 +376,16 @@ class EmojiTetris {
                 if (manifest.sounds && manifest.sounds.length > 0) {
                     console.log('Loading sounds from old location (emojis/manifest.json)');
                     this.loadDiscordSounds(manifest, true);
+                } else {
+                    console.log('No sounds in old manifest either');
+                    this.soundsLoaded = true;
+                    this.updateLoadingState();
                 }
             })
             .catch((error) => {
                 console.log('No sounds available in old location either');
+                this.soundsLoaded = true;
+                this.updateLoadingState();
             });
     }
     
@@ -385,6 +428,10 @@ class EmojiTetris {
         });
         
         console.log('Discord sounds loaded!');
+        
+        // Mark sounds as loaded
+        this.soundsLoaded = true;
+        this.updateLoadingState();
         
         // Update status
         soundStatusEl.className = 'sound-status has-sounds';
