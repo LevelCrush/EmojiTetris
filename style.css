@@ -488,6 +488,9 @@ body {
     padding: 40px;
     text-align: center;
     min-width: 300px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .modal h2 {
@@ -896,4 +899,189 @@ body {
     0% { box-shadow: 0 0 30px rgba(102, 126, 234, 0.8); }
     50% { box-shadow: 0 0 50px rgba(102, 126, 234, 1); }
     100% { box-shadow: 0 0 30px rgba(102, 126, 234, 0.8); }
+}
+
+/* Sound Volumes */
+.sound-search-container {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+#sound-search {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    border-radius: 25px;
+    font-size: 16px;
+}
+
+.autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.95);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    margin-top: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.autocomplete-item {
+    padding: 12px 15px;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.autocomplete-item:hover {
+    background: rgba(102, 126, 234, 0.3);
+}
+
+.autocomplete-item.selected {
+    background: rgba(102, 126, 234, 0.5);
+}
+
+.sound-volumes-list {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 15px;
+}
+
+.sound-volume-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.sound-volume-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.sound-name {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.sound-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.preview-btn, .remove-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.preview-btn:hover {
+    background: rgba(76, 175, 80, 0.3);
+    transform: scale(1.05);
+}
+
+.remove-btn:hover {
+    background: rgba(244, 67, 54, 0.3);
+    transform: scale(1.05);
+}
+
+.sound-volume-slider-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sound-volume-slider {
+    flex: 1;
+    height: 6px;
+    background: linear-gradient(to right, 
+        #f44336 0%, 
+        #ff9800 25%, 
+        #4caf50 50%, 
+        #2196f3 75%, 
+        #9c27b0 100%);
+    outline: none;
+    -webkit-appearance: none;
+    border-radius: 5px;
+    position: relative;
+}
+
+.sound-volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.sound-volume-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.sound-volume-display {
+    min-width: 50px;
+    text-align: right;
+    font-weight: bold;
+}
+
+.settings-btn {
+    background: rgba(102, 126, 234, 0.8);
+    border: none;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.settings-btn:hover {
+    background: rgba(102, 126, 234, 1);
+    transform: scale(1.02);
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .sound-volume-item {
+        padding: 12px;
+    }
+    
+    .autocomplete-item {
+        padding: 15px;
+        font-size: 16px;
+    }
+    
+    .sound-volume-slider::-webkit-slider-thumb {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .sound-volume-slider::-moz-range-thumb {
+        width: 24px;
+        height: 24px;
+    }
 }

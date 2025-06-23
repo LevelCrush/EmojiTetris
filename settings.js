@@ -8,7 +8,8 @@ class SettingsManager {
             effectsMuted: false,
             youtubeUrl: '',
             highScore: 0,
-            overlayBrightness: 75
+            overlayBrightness: 75,
+            soundVolumes: {} // Individual sound volumes (default 100)
         };
         
         this.listeners = {};
@@ -222,6 +223,26 @@ class SettingsManager {
         
         // Apply saved settings to UI
         this.applyToUI();
+    }
+    
+    // Get sound volume with default fallback
+    getSoundVolume(soundName) {
+        return this.settings.soundVolumes[soundName] || 100;
+    }
+    
+    // Set sound volume
+    setSoundVolume(soundName, volume) {
+        if (!this.settings.soundVolumes) {
+            this.settings.soundVolumes = {};
+        }
+        this.settings.soundVolumes[soundName] = volume;
+        this.saveSettings();
+    }
+    
+    // Reset all sound volumes to default
+    resetAllSoundVolumes() {
+        this.settings.soundVolumes = {};
+        this.saveSettings();
     }
 }
 

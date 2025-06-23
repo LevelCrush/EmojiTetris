@@ -73,6 +73,21 @@
                 </div>
             </div>
             
+            <!-- Individual Sound Volumes -->
+            <div class="settings-section">
+                <h3>🎵 Individual Sound Volumes</h3>
+                <div class="settings-group">
+                    <div class="sound-search-container">
+                        <input type="text" id="sound-search" placeholder="Search for a sound..." autocomplete="off">
+                        <div id="sound-autocomplete" class="autocomplete-dropdown hidden"></div>
+                    </div>
+                    <button id="reset-all-volumes" class="settings-btn">Reset All to 100%</button>
+                </div>
+                <div id="sound-volumes-list" class="sound-volumes-list">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+            
             <button id="close-settings" class="modal-btn">Close</button>
         </div>
     </div>
@@ -245,5 +260,6 @@
     <script src="particles.js?v=1.3.2"></script>
     <script src="controls.js?v=1.3.2"></script>
     <script src="game.js?v=1.3.2"></script>
+    <script src="sound-volumes.js?v=1.3.2"></script>
 </body>
 </html>

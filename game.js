@@ -241,7 +241,11 @@ class EmojiTetris {
         soundStatusEl.classList.remove('hidden');
         soundTextEl.textContent = `Loading ${manifest.sounds.length} sounds...`;
         
-        manifest.sounds.forEach((sound) => {
+        // Clear existing sounds
+        this.sounds = [];
+        this.soundAudios = {};
+        
+        manifest.sounds.forEach((sound, index) => {
             const audio = new Audio();
             
             // Use base64 data URL if available, otherwise load from file
@@ -255,12 +259,15 @@ class EmojiTetris {
             audio.volume = 0.5; // Default volume
             audio.preload = 'auto';
             
-            this.soundAudios[sound.index] = {
+            this.soundAudios[index] = {
                 audio: audio,
                 name: sound.name
             };
             
-            this.sounds.push(sound);
+            this.sounds.push({
+                ...sound,
+                index: index
+            });
         });
         
         console.log('Discord sounds loaded!');
@@ -291,13 +298,30 @@ class EmojiTetris {
             // Clone the audio to allow overlapping sounds
             const audio = soundData.audio.cloneNode();
             
-            // Use effects volume from settings
-            const volume = window.settingsManager ? window.settingsManager.get('effectsVolume') : 50;
-            audio.volume = volume / 100;
+            // Get volume settings
+            const globalVolume = window.settingsManager ? window.settingsManager.get('effectsVolume') : 50;
+            const soundVolume = window.settingsManager ? window.settingsManager.getSoundVolume(soundData.name) : 100;
             
-            audio.play().catch(e => console.log('Sound play failed:', e));
+            // Calculate final volume
+            const finalVolume = (globalVolume / 100) * (soundVolume / 100);
             
-            console.log(`Playing sound: ${soundData.name} at volume ${volume}%`);
+            // Play sound with appropriate method
+            if (finalVolume > 1 && window.audioContext) {
+                // Use Web Audio API for amplification
+                try {
+                    this.playAmplifiedSound(audio, finalVolume);
+                } catch (e) {
+                    // Fallback to normal playback
+                    audio.volume = Math.min(1, finalVolume);
+                    audio.play().catch(e => console.log('Sound play failed:', e));
+                }
+            } else {
+                // Normal playback for volumes <= 100%
+                audio.volume = Math.min(1, finalVolume);
+                audio.play().catch(e => console.log('Sound play failed:', e));
+            }
+            
+            console.log(`Playing sound: ${soundData.name} at ${Math.round(finalVolume * 100)}% total volume`);
             
             // Show sound name briefly
             const soundStatusEl = document.getElementById('sound-status');
@@ -312,6 +336,28 @@ class EmojiTetris {
                 soundStatusEl.classList.add('hidden');
             }, 2000);
         }
+    }
+    
+    playAmplifiedSound(audio, volume) {
+        if (!window.audioContext) {
+            window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        
+        const source = window.audioContext.createMediaElementSource(audio);
+        const gainNode = window.audioContext.createGain();
+        
+        // Apply gain with soft limiting for very high volumes
+        if (volume > 1.5) {
+            // Soft limit to prevent clipping
+            gainNode.gain.value = 1.5 + (volume - 1.5) * 0.5;
+        } else {
+            gainNode.gain.value = volume;
+        }
+        
+        source.connect(gainNode);
+        gainNode.connect(window.audioContext.destination);
+        
+        audio.play().catch(e => console.log('Amplified sound play failed:', e));
     }
     
     init() {
@@ -1349,5 +1395,5 @@ class EmojiTetris {
 
 // Start game when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    new EmojiTetris();
+    window.game = new EmojiTetris();
 });
