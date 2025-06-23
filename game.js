@@ -38,6 +38,7 @@ class EmojiTetris {
         // Emoji pieces
         this.emojis = [];
         this.emojiImages = {};
+        this.animatedEmojis = {}; // Store animated emoji data
         this.emojisLoaded = false;
         this.loadEmojis();
         
@@ -126,6 +127,7 @@ class EmojiTetris {
         // Keep default emojis as fallback until Discord emojis are loaded
         // this.emojis will be replaced as we load
         this.emojiImages = {};
+        this.animatedEmojis = {};
         
         // Update status
         this.updateEmojiStatus(`Loading ${emojiCount} Discord emojis...`);
@@ -137,49 +139,134 @@ class EmojiTetris {
             // Add placeholder to maintain order
             this.emojis[index] = `[${emoji.name}]`;
             
-            const img = new Image();
+            // Check if it's a GIF
+            const isGif = emoji.filename && emoji.filename.toLowerCase().endsWith('.gif');
             
-            // Use base64 data URL if available, otherwise load from file
-            if (emoji.dataUrl) {
-                img.src = emoji.dataUrl;
+            if (isGif) {
+                // Parse GIF frames
+                this.loadAnimatedEmoji(emoji, index, () => {
+                    loadedCount++;
+                    this.checkAllEmojisLoaded(loadedCount, emojiCount);
+                });
             } else {
-                img.src = `emojis/${emoji.filename}`;
+                // Load as static image
+                const img = new Image();
+                
+                // Use base64 data URL if available, otherwise load from file
+                if (emoji.dataUrl) {
+                    img.src = emoji.dataUrl;
+                } else {
+                    img.src = `emojis/${emoji.filename}`;
+                }
+                
+                img.onload = () => {
+                    this.emojiImages[index] = img;
+                    loadedCount++;
+                    this.checkAllEmojisLoaded(loadedCount, emojiCount);
+                };
+                
+                img.onerror = () => {
+                    console.error(`Failed to load emoji: ${emoji.name}`);
+                    loadedCount++;
+                    this.checkAllEmojisLoaded(loadedCount, emojiCount);
+                };
             }
-            
-            img.onload = () => {
-                this.emojiImages[index] = img;
-                loadedCount++;
-                
-                // Update status periodically
-                if (loadedCount % 10 === 0 || loadedCount === emojiCount) {
-                    this.updateEmojiStatus(`Loading Discord emojis... ${loadedCount}/${emojiCount}`);
-                }
-                
-                if (loadedCount === emojiCount) {
-                    const mode = manifest.useBase64 ? ' (base64 mode)' : '';
-                    this.updateEmojiStatus(`Loaded ${emojiCount} Discord emojis!${mode}`, 'success');
-                    console.log(`Successfully loaded ${Object.keys(this.emojiImages).length} Discord emojis`);
-                    console.log(`Emoji array length: ${this.emojis.length}`);
-                    console.log(`Sample emojis: ${this.emojis.slice(0, 10).join(', ')}`);
-                    this.useDefaultEmojis = false;
-                    this.emojisLoaded = true;
-                    setTimeout(() => {
-                        document.getElementById('emoji-status').classList.add('hidden');
-                    }, 3000);
-                }
-            };
-            img.onerror = () => {
-                console.error(`Failed to load emoji: ${emoji.name}`);
-                loadedCount++;
-                
-                if (loadedCount === emojiCount) {
-                    this.updateEmojiStatus(`Loaded ${Object.keys(this.emojiImages).length}/${emojiCount} emojis`, 'default');
-                    setTimeout(() => {
-                        document.getElementById('emoji-status').classList.add('hidden');
-                    }, 3000);
-                }
-            };
         });
+    }
+    
+    loadAnimatedEmoji(emoji, index, callback) {
+        // Function to parse GIF data
+        const parseGifData = (arrayBuffer) => {
+            try {
+                // Parse GIF using gifuct-js
+                const gif = new GIF(arrayBuffer);
+                const frames = gif.decompressFrames(true);
+                
+                if (frames.length > 0) {
+                    // Create canvases for each frame
+                    const animData = {
+                        frames: [],
+                        delays: [],
+                        currentFrame: 0,
+                        lastFrameTime: 0,
+                        totalDuration: 0
+                    };
+                    
+                    frames.forEach((frame, frameIndex) => {
+                        // Create canvas for this frame
+                        const canvas = document.createElement('canvas');
+                        canvas.width = frame.dims.width;
+                        canvas.height = frame.dims.height;
+                        const ctx = canvas.getContext('2d');
+                        
+                        // Create ImageData and put pixel data
+                        const imageData = ctx.createImageData(frame.dims.width, frame.dims.height);
+                        imageData.data.set(frame.patch);
+                        ctx.putImageData(imageData, 0, 0);
+                        
+                        animData.frames.push(canvas);
+                        animData.delays.push(frame.delay || 100); // Default 100ms if no delay
+                        animData.totalDuration += frame.delay || 100;
+                    });
+                    
+                    this.animatedEmojis[index] = animData;
+                    console.log(`Loaded animated emoji ${emoji.name} with ${frames.length} frames`);
+                } else {
+                    console.warn(`No frames found in GIF: ${emoji.name}`);
+                }
+            } catch (error) {
+                console.error(`Failed to parse GIF ${emoji.name}:`, error);
+            }
+        };
+        
+        if (emoji.dataUrl) {
+            // Convert base64 to array buffer
+            const base64 = emoji.dataUrl.split(',')[1];
+            const binaryString = atob(base64);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            parseGifData(bytes.buffer);
+            callback();
+        } else {
+            // Load from file
+            fetch(`emojis/${emoji.filename}`)
+                .then(response => response.arrayBuffer())
+                .then(arrayBuffer => {
+                    parseGifData(arrayBuffer);
+                    callback();
+                })
+                .catch(error => {
+                    console.error(`Failed to load GIF ${emoji.name}:`, error);
+                    callback();
+                });
+        }
+    }
+    
+    checkAllEmojisLoaded(loadedCount, totalCount) {
+        // Update status periodically
+        if (loadedCount % 10 === 0 || loadedCount === totalCount) {
+            this.updateEmojiStatus(`Loading Discord emojis... ${loadedCount}/${totalCount}`);
+        }
+        
+        if (loadedCount === totalCount) {
+            const staticCount = Object.keys(this.emojiImages).length;
+            const animatedCount = Object.keys(this.animatedEmojis).length;
+            
+            this.updateEmojiStatus(
+                `Loaded ${staticCount} static + ${animatedCount} animated emojis!`, 
+                'success'
+            );
+            
+            console.log(`Successfully loaded ${staticCount} static and ${animatedCount} animated emojis`);
+            this.useDefaultEmojis = false;
+            this.emojisLoaded = true;
+            
+            setTimeout(() => {
+                document.getElementById('emoji-status').classList.add('hidden');
+            }, 3000);
+        }
     }
     
     updateEmojiStatus(message, type = '') {
@@ -1170,8 +1257,35 @@ class EmojiTetris {
         }
         
         // Draw emoji or image
-        if (this.emojiImages[emojiIndex]) {
-            // Draw Discord emoji image
+        if (this.animatedEmojis[emojiIndex]) {
+            // Draw animated emoji frame
+            const animData = this.animatedEmojis[emojiIndex];
+            const now = Date.now();
+            
+            // Calculate which frame to show based on total elapsed time
+            const elapsedTotal = now % animData.totalDuration;
+            let currentTime = 0;
+            let frameIndex = 0;
+            
+            // Find which frame we should be showing
+            for (let i = 0; i < animData.frames.length; i++) {
+                if (elapsedTotal >= currentTime && elapsedTotal < currentTime + animData.delays[i]) {
+                    frameIndex = i;
+                    break;
+                }
+                currentTime += animData.delays[i];
+            }
+            
+            const frame = animData.frames[frameIndex];
+            this.ctx.drawImage(
+                frame,
+                blockX + 2,
+                blockY + 2,
+                this.blockSize - 4,
+                this.blockSize - 4
+            );
+        } else if (this.emojiImages[emojiIndex]) {
+            // Draw static Discord emoji image
             this.ctx.drawImage(
                 this.emojiImages[emojiIndex],
                 blockX + 2,
@@ -1183,7 +1297,19 @@ class EmojiTetris {
             // If image not loaded, try to find a loaded emoji image
             let foundImage = false;
             for (let i = 0; i < this.emojis.length; i++) {
-                if (this.emojiImages[i]) {
+                if (this.animatedEmojis[i]) {
+                    // Use first frame of animated emoji
+                    const frame = this.animatedEmojis[i].frames[0];
+                    this.ctx.drawImage(
+                        frame,
+                        blockX + 2,
+                        blockY + 2,
+                        this.blockSize - 4,
+                        this.blockSize - 4
+                    );
+                    foundImage = true;
+                    break;
+                } else if (this.emojiImages[i]) {
                     this.ctx.drawImage(
                         this.emojiImages[i],
                         blockX + 2,
