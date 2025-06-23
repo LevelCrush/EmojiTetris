@@ -200,8 +200,7 @@ class EmojiTetris {
                             delay: frameInfo.delay * 10 // Convert from centiseconds to milliseconds
                         });
                     }
-                
-                if (frames.length > 0) {
+                    
                     // Create canvases for each frame
                     const animData = {
                         frames: [],
