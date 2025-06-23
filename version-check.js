@@ -1,5 +1,5 @@
 // Version checking and cache busting
-const CURRENT_VERSION = '1.3.6';
+const CURRENT_VERSION = '1.3.7';
 const VERSION_CHECK_INTERVAL = 60000; // Check every minute
 let versionCheckTimer = null;
 let updateNotificationShown = false;
