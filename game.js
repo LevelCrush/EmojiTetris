@@ -8,6 +8,8 @@ class EmojiTetris {
         this.holdCtx = this.holdCanvas.getContext('2d');
         this.nextCanvas = document.getElementById('next-canvas');
         this.nextCtx = this.nextCanvas.getContext('2d');
+        this.nextCanvasMobile = document.getElementById('next-canvas-mobile');
+        this.nextCtxMobile = this.nextCanvasMobile ? this.nextCanvasMobile.getContext('2d') : null;
         
         // Game dimensions
         this.cols = 10;
@@ -918,7 +920,7 @@ class EmojiTetris {
                         ghost.x + x, 
                         ghost.y + y, 
                         ghost.emoji === 'rainbow' ? 0 : ghost.emoji, 
-                        0.15,
+                        0.3,
                         ghost.isRainbow || isLevelUpRainbow
                     );
                 }
@@ -1202,6 +1204,13 @@ class EmojiTetris {
         this.nextCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         this.nextCtx.fillRect(0, 0, this.nextCanvas.width, this.nextCanvas.height);
         
+        // Also draw on mobile canvas if available
+        if (this.nextCtxMobile) {
+            this.nextCtxMobile.clearRect(0, 0, this.nextCanvasMobile.width, this.nextCanvasMobile.height);
+            this.nextCtxMobile.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            this.nextCtxMobile.fillRect(0, 0, this.nextCanvasMobile.width, this.nextCanvasMobile.height);
+        }
+        
         const scale = 25;
         let yOffset = 10;
         
@@ -1257,6 +1266,59 @@ class EmojiTetris {
             }
             
             yOffset += piece.matrix.length * scale + 20;
+        }
+        
+        // Draw first piece on mobile canvas
+        if (this.nextCtxMobile && this.nextPieces[0]) {
+            const piece = this.nextPieces[0];
+            const mobileScale = 20;
+            const offsetX = (this.nextCanvasMobile.width - piece.matrix[0].length * mobileScale) / 2;
+            const offsetY = (this.nextCanvasMobile.height - piece.matrix.length * mobileScale) / 2;
+            
+            for (let y = 0; y < piece.matrix.length; y++) {
+                for (let x = 0; x < piece.matrix[y].length; x++) {
+                    if (piece.matrix[y][x]) {
+                        this.nextCtxMobile.save();
+                        
+                        const blockX = offsetX + x * mobileScale;
+                        const blockY = offsetY + y * mobileScale;
+                        
+                        // Handle rainbow pieces
+                        let emojiIndex = piece.emoji;
+                        if (piece.isRainbow || piece.emoji === 'rainbow') {
+                            const time = Date.now() / 500; // Change every 500ms
+                            emojiIndex = Math.floor(time + x + y) % this.emojis.length;
+                        }
+                        
+                        // Draw emoji
+                        if (this.emojiImages[emojiIndex]) {
+                            this.nextCtxMobile.drawImage(
+                                this.emojiImages[emojiIndex],
+                                blockX,
+                                blockY,
+                                mobileScale,
+                                mobileScale
+                            );
+                        } else {
+                            // Find any loaded emoji image as fallback
+                            for (let i = 0; i < this.emojis.length; i++) {
+                                if (this.emojiImages[i]) {
+                                    this.nextCtxMobile.drawImage(
+                                        this.emojiImages[i],
+                                        blockX,
+                                        blockY,
+                                        mobileScale,
+                                        mobileScale
+                                    );
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        this.nextCtxMobile.restore();
+                    }
+                }
+            }
         }
     }
 }

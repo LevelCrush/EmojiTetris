@@ -46,11 +46,7 @@ class Controls {
         document.addEventListener('keydown', this.handleKeyDown.bind(this));
         document.addEventListener('keyup', this.handleKeyUp.bind(this));
         
-        // Touch events
-        const canvas = document.getElementById('game-canvas');
-        canvas.addEventListener('touchstart', this.handleTouchStart.bind(this));
-        canvas.addEventListener('touchmove', this.handleTouchMove.bind(this));
-        canvas.addEventListener('touchend', this.handleTouchEnd.bind(this));
+        // Touch events - removed for mobile to use button controls only
         
         // Mouse events
         canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
@@ -167,77 +163,17 @@ class Controls {
         }
     }
     
-    // Touch handling
+    // Touch handling - removed, using button controls only on mobile
     handleTouchStart(e) {
-        // Only prevent default for canvas touches, not for UI elements
-        if (e.target.id === 'game-canvas') {
-            e.preventDefault();
-        }
-        
-        const rect = e.target.getBoundingClientRect();
-        
-        for (let touch of e.changedTouches) {
-            const x = (touch.clientX - rect.left) / rect.width;
-            const y = (touch.clientY - rect.top) / rect.height;
-            
-            this.touches.push({
-                id: touch.identifier,
-                startX: x,
-                startY: y,
-                currentX: x,
-                currentY: y,
-                startTime: Date.now(),
-                hasMoved: false
-            });
-            
-            // Don't immediately trigger actions on touch start
-            // Wait for touch end or movement to determine intent
-        }
+        // Disabled - using button controls
     }
     
     handleTouchMove(e) {
-        if (e.target.id === 'game-canvas') {
-            e.preventDefault();
-        }
-        
-        const rect = e.target.getBoundingClientRect();
-        
-        for (let touch of e.changedTouches) {
-            const touchData = this.touches.find(t => t.id === touch.identifier);
-            if (touchData) {
-                touchData.currentX = (touch.clientX - rect.left) / rect.width;
-                touchData.currentY = (touch.clientY - rect.top) / rect.height;
-                touchData.hasMoved = true;
-                
-                // Check for swipe gestures
-                this.checkSwipeGesture(touchData);
-            }
-        }
+        // Disabled - using button controls
     }
     
     handleTouchEnd(e) {
-        if (e.target.id === 'game-canvas') {
-            e.preventDefault();
-        }
-        
-        for (let touch of e.changedTouches) {
-            const touchIndex = this.touches.findIndex(t => t.id === touch.identifier);
-            if (touchIndex !== -1) {
-                const touchData = this.touches[touchIndex];
-                
-                // Only trigger tap actions if touch hasn't moved
-                if (!touchData.hasMoved && e.target.id === 'game-canvas') {
-                    const action = this.getTouchAction(touchData.startX, touchData.startY);
-                    if (action === 'rotate') {
-                        // Rotate is a single action, not continuous
-                        this.performAction(action, true);
-                        setTimeout(() => this.performAction(action, false), 50);
-                    }
-                }
-                
-                this.touches.splice(touchIndex, 1);
-            }
-        }
+        // Disabled - using button controls
     }
     
     getTouchAction(x, y) {
