@@ -20,7 +20,9 @@ class Controls {
             ' ': 'rotate',
             Shift: 'hold',
             p: 'pause',
-            P: 'pause'
+            P: 'pause',
+            g: 'debugGif',
+            G: 'debugGif'
         };
         
         // Touch zones
@@ -358,6 +360,9 @@ class Controls {
                 case 'drop':
                     this.game.hardDrop();
                     this.vibrate(25);
+                    break;
+                case 'debugGif':
+                    this.game.debugAnimatedEmojis();
                     break;
             }
         } else {

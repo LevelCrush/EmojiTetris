@@ -260,6 +260,15 @@ class EmojiTetris {
             );
             
             console.log(`Successfully loaded ${staticCount} static and ${animatedCount} animated emojis`);
+            
+            // Log some animated emoji info for debugging
+            if (animatedCount > 0) {
+                const animatedInfo = Object.entries(this.animatedEmojis).slice(0, 3).map(([idx, data]) => 
+                    `Index ${idx}: ${data.frames.length} frames`
+                );
+                console.log('Sample animated emojis:', animatedInfo);
+            }
+            
             this.useDefaultEmojis = false;
             this.emojisLoaded = true;
             
@@ -549,6 +558,28 @@ class EmojiTetris {
         this.showSettings();
     }
     
+    debugAnimatedEmojis() {
+        const animatedCount = Object.keys(this.animatedEmojis).length;
+        console.log(`=== Animated Emoji Debug ===`);
+        console.log(`Total animated emojis: ${animatedCount}`);
+        
+        if (animatedCount > 0) {
+            console.log('Animated emoji indices:', Object.keys(this.animatedEmojis));
+            
+            // Force spawn an animated emoji piece
+            const animatedIndices = Object.keys(this.animatedEmojis).map(Number);
+            const randomAnimated = animatedIndices[Math.floor(Math.random() * animatedIndices.length)];
+            
+            if (this.currentPiece) {
+                this.currentPiece.emoji = randomAnimated;
+                console.log(`Changed current piece to animated emoji index ${randomAnimated}`);
+            }
+        } else {
+            console.log('No animated emojis loaded!');
+            console.log('Check if any .gif files exist in the emoji manifest');
+        }
+    }
+    
     createPiece() {
         const shapes = Object.keys(this.shapes);
         const shape = shapes[Math.floor(Math.random() * shapes.length)];
@@ -564,43 +595,66 @@ class EmojiTetris {
             // Rainbow piece - will cycle through emojis
             emoji = 'rainbow';
         } else {
+            // Ensure 1 in 4 pieces uses an animated emoji
+            const shouldUseAnimated = this.piecesSpawned % 4 === 0;
+            
             // Always use random emoji selection
             // Don't repeat the last 2 emojis used
             if (!this.recentEmojis) {
                 this.recentEmojis = [];
             }
             
+            // Get list of animated emojis
+            const animatedIndices = Object.keys(this.animatedEmojis).map(Number);
+            
             // Make sure we're using all loaded emojis
-            const emojiCount = this.emojisLoaded && this.emojiImages ? 
-                Math.max(this.emojis.length, Object.keys(this.emojiImages).length) : 
+            const emojiCount = this.emojisLoaded && (this.emojiImages || this.animatedEmojis) ? 
+                Math.max(this.emojis.length, Object.keys(this.emojiImages).length + animatedIndices.length) : 
                 this.emojis.length;
             
             let availableEmojis = [];
-            for (let i = 0; i < emojiCount; i++) {
-                // Only add emoji indices that have loaded images
-                if (!this.recentEmojis.includes(i) && this.emojiImages[i]) {
-                    availableEmojis.push(i);
-                }
-            }
             
-            // If we've used most emojis, reset the recent list
-            // Keep more history for larger emoji sets
-            const minAvailable = Math.min(10, Math.floor(emojiCount * 0.2));
-            if (availableEmojis.length < minAvailable) {
-                this.recentEmojis = [];
-                // Only include indices with loaded images
-                availableEmojis = [];
+            if (shouldUseAnimated && animatedIndices.length > 0) {
+                // Force selection from animated emojis
+                console.log(`Forcing animated emoji selection (${animatedIndices.length} available)`);
+                for (const index of animatedIndices) {
+                    if (!this.recentEmojis.includes(index)) {
+                        availableEmojis.push(index);
+                    }
+                }
+                
+                // If all animated emojis were recently used, use all animated emojis
+                if (availableEmojis.length === 0) {
+                    availableEmojis = [...animatedIndices];
+                }
+            } else {
+                // Normal selection from all emojis
                 for (let i = 0; i < emojiCount; i++) {
-                    if (this.emojiImages[i]) {
+                    // Add emoji if it has either a static image or is animated
+                    if (!this.recentEmojis.includes(i) && (this.emojiImages[i] || this.animatedEmojis[i])) {
                         availableEmojis.push(i);
+                    }
+                }
+                
+                // If we've used most emojis, reset the recent list
+                // Keep more history for larger emoji sets
+                const minAvailable = Math.min(10, Math.floor(emojiCount * 0.2));
+                if (availableEmojis.length < minAvailable) {
+                    this.recentEmojis = [];
+                    // Only include indices with loaded images or animations
+                    availableEmojis = [];
+                    for (let i = 0; i < emojiCount; i++) {
+                        if (this.emojiImages[i] || this.animatedEmojis[i]) {
+                            availableEmojis.push(i);
+                        }
                     }
                 }
             }
             
-            // If still no available emojis with images, use any loaded image
+            // If still no available emojis, use any loaded emoji
             if (availableEmojis.length === 0) {
                 for (let i = 0; i < emojiCount; i++) {
-                    if (this.emojiImages[i]) {
+                    if (this.emojiImages[i] || this.animatedEmojis[i]) {
                         availableEmojis.push(i);
                     }
                 }
@@ -610,10 +664,12 @@ class EmojiTetris {
             emoji = availableEmojis[Math.floor(Math.random() * availableEmojis.length)];
             
             // Debug logging
-            if (this.piecesSpawned <= 5) {
-                console.log(`Piece ${this.piecesSpawned}: Selected emoji index ${emoji} from ${emojiCount} total emojis`);
-                console.log(`Available emojis: ${availableEmojis.length}, Recent: ${this.recentEmojis.length}`);
-                console.log(`Emojis loaded: ${this.emojisLoaded}, Images: ${Object.keys(this.emojiImages).length}`);
+            if (shouldUseAnimated || this.piecesSpawned <= 5) {
+                const isAnimated = this.animatedEmojis[emoji] !== undefined;
+                console.log(`Piece ${this.piecesSpawned}: Selected emoji index ${emoji} (${isAnimated ? 'ANIMATED' : 'static'})`);
+                if (shouldUseAnimated) {
+                    console.log(`Should use animated: YES, Available animated: ${animatedIndices.length}`);
+                }
             }
             
             // Add to recent emojis and keep more history for larger sets
