@@ -311,6 +311,13 @@ body {
     position: relative;
 }
 
+.game-board-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    position: relative;
+}
+
 .drop-hint {
     display: none;
     font-size: 11px;
@@ -644,16 +651,19 @@ body {
     /* Center the main game area */
     .main-game {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
+    }
+    
+    .game-board-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
         position: relative;
     }
     
     .game-canvases {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
         position: relative;
     }
     

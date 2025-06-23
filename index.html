@@ -125,16 +125,18 @@
 
         <!-- Main Game Area -->
         <div class="main-game">
-            <!-- Left Rotate Button -->
-            <button class="rotate-btn rotate-left" data-action="rotate">↻</button>
-            
-            <div class="game-canvases">
-                <canvas id="game-canvas" width="300" height="600"></canvas>
-                <canvas id="particle-canvas" width="300" height="600"></canvas>
+            <div class="game-board-container">
+                <!-- Left Rotate Button -->
+                <button class="rotate-btn rotate-left" data-action="rotate">↻</button>
+                
+                <div class="game-canvases">
+                    <canvas id="game-canvas" width="300" height="600"></canvas>
+                    <canvas id="particle-canvas" width="300" height="600"></canvas>
+                </div>
+                
+                <!-- Right Rotate Button -->
+                <button class="rotate-btn rotate-right" data-action="rotate">↻</button>
             </div>
-            
-            <!-- Right Rotate Button -->
-            <button class="rotate-btn rotate-right" data-action="rotate">↻</button>
             
             <!-- Mobile Controls (Bottom) -->
             <div id="mobile-controls" class="mobile-controls">
