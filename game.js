@@ -179,8 +179,27 @@ class EmojiTetris {
         const parseGifData = (arrayBuffer) => {
             try {
                 // Parse GIF using gifuct-js
-                const gif = new GIF(arrayBuffer);
-                const frames = gif.decompressFrames(true);
+                // The library exports GifReader class
+                const gif = new GifReader(new Uint8Array(arrayBuffer));
+                
+                // Get frame count
+                const frameCount = gif.numFrames();
+                
+                if (frameCount > 0) {
+                    const frames = [];
+                    
+                    // Extract each frame
+                    for (let i = 0; i < frameCount; i++) {
+                        const frameInfo = gif.frameInfo(i);
+                        const imageData = new Uint8ClampedArray(gif.width * gif.height * 4);
+                        gif.decodeAndBlitFrameRGBA(i, imageData);
+                        
+                        frames.push({
+                            dims: { width: gif.width, height: gif.height },
+                            patch: imageData,
+                            delay: frameInfo.delay * 10 // Convert from centiseconds to milliseconds
+                        });
+                    }
                 
                 if (frames.length > 0) {
                     // Create canvases for each frame
