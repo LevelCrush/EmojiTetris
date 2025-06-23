@@ -367,13 +367,21 @@ class EmojiTetris {
         if (highScoreMobile) highScoreMobile.textContent = this.highScore;
         
         // UI event listeners
-        document.getElementById('play-btn').addEventListener('click', () => this.startGame());
-        document.getElementById('restart-btn').addEventListener('click', () => this.restart());
-        document.getElementById('resume-btn').addEventListener('click', () => this.togglePause());
-        document.getElementById('controls-btn').addEventListener('click', () => this.showControls());
-        document.getElementById('close-controls').addEventListener('click', () => this.hideControls());
-        document.getElementById('settings-btn').addEventListener('click', () => this.showSettings());
-        document.getElementById('close-settings').addEventListener('click', () => this.hideSettings());
+        const playBtn = document.getElementById('play-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const resumeBtn = document.getElementById('resume-btn');
+        const controlsBtn = document.getElementById('controls-btn');
+        const closeControlsBtn = document.getElementById('close-controls');
+        const settingsBtn = document.getElementById('settings-btn');
+        const closeSettingsBtn = document.getElementById('close-settings');
+        
+        if (playBtn) playBtn.addEventListener('click', () => this.startGame());
+        if (restartBtn) restartBtn.addEventListener('click', () => this.restart());
+        if (resumeBtn) resumeBtn.addEventListener('click', () => this.togglePause());
+        if (controlsBtn) controlsBtn.addEventListener('click', () => this.showControls());
+        if (closeControlsBtn) closeControlsBtn.addEventListener('click', () => this.hideControls());
+        if (settingsBtn) settingsBtn.addEventListener('click', () => this.showSettings());
+        if (closeSettingsBtn) closeSettingsBtn.addEventListener('click', () => this.hideSettings());
         
         // Make game instance globally available
         window.gameInstance = this;
@@ -427,7 +435,13 @@ class EmojiTetris {
     
     showSettings() {
         // Show settings modal
-        document.getElementById('settings-modal').classList.remove('hidden');
+        const modal = document.getElementById('settings-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            console.log('Settings modal shown');
+        } else {
+            console.error('Settings modal not found!');
+        }
     }
     
     hideSettings() {

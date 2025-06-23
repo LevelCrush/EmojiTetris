@@ -49,9 +49,12 @@ class Controls {
         // Touch events - removed for mobile to use button controls only
         
         // Mouse events
-        canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
-        canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));
-        canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
+        const canvas = document.getElementById('game-canvas');
+        if (canvas) {
+            canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
+            canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));
+            canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
+        }
         
         // Mobile control buttons (both regular and small)
         document.querySelectorAll('.control-btn, .control-btn-small, .rotate-btn').forEach(btn => {
