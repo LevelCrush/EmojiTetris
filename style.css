@@ -42,6 +42,7 @@ body {
     height: 100%;
     background: rgba(0, 0, 0, 0.75);
     z-index: 1;
+    transition: background 0.3s ease;
 }
 
 
@@ -270,6 +271,58 @@ body {
     padding: 10px 15px;
     border-radius: 25px;
     border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.volume-control-inline input[type="range"] {
+    flex: 1;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.3);
+    outline: none;
+    -webkit-appearance: none;
+    border-radius: 5px;
+}
+
+.volume-control-inline input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.volume-control-inline input[type="range"]::-moz-range-thumb {
+    width: 15px;
+    height: 15px;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+.volume-control-inline button {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.volume-control-inline button:hover {
+    transform: scale(1.2);
+}
+
+.volume-control-inline span {
+    min-width: 45px;
+    text-align: right;
+    font-size: 14px;
 }
 
 .control-item {

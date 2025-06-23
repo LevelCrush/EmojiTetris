@@ -7,7 +7,8 @@ class SettingsManager {
             effectsVolume: 50,
             effectsMuted: false,
             youtubeUrl: '',
-            highScore: 0
+            highScore: 0,
+            overlayBrightness: 75
         };
         
         this.listeners = {};
@@ -105,6 +106,27 @@ class SettingsManager {
         if (youtubeInput && this.settings.youtubeUrl) {
             youtubeInput.value = this.settings.youtubeUrl;
         }
+        
+        // Overlay brightness
+        const overlaySlider = document.getElementById('overlay-brightness-slider');
+        const overlayDisplay = document.getElementById('overlay-brightness-display');
+        
+        if (overlaySlider) {
+            overlaySlider.value = this.settings.overlayBrightness;
+            overlayDisplay.textContent = `${this.settings.overlayBrightness}%`;
+            this.updateOverlayBrightness(this.settings.overlayBrightness);
+        }
+    }
+    
+    // Update the video overlay brightness
+    updateOverlayBrightness(brightness) {
+        const overlay = document.querySelector('.video-overlay');
+        if (overlay) {
+            // Convert brightness percentage to opacity (inverse relationship)
+            // 0% brightness = 1 opacity (darkest), 100% brightness = 0 opacity (brightest)
+            const opacity = brightness / 100;
+            overlay.style.background = `rgba(0, 0, 0, ${opacity})`;
+        }
     }
     
     // Initialize UI event listeners
@@ -158,6 +180,43 @@ class SettingsManager {
                 const muted = !this.settings.effectsMuted;
                 this.set('effectsMuted', muted);
                 effectsMuteBtn.textContent = muted ? '🔇' : '🔊';
+            });
+        }
+        
+        // Overlay brightness controls
+        const overlaySlider = document.getElementById('overlay-brightness-slider');
+        const overlayDisplay = document.getElementById('overlay-brightness-display');
+        const overlayDecreaseBtn = document.getElementById('overlay-brightness-decrease');
+        
+        if (overlaySlider) {
+            overlaySlider.addEventListener('input', (e) => {
+                const brightness = parseInt(e.target.value);
+                this.set('overlayBrightness', brightness);
+                overlayDisplay.textContent = `${brightness}%`;
+                this.updateOverlayBrightness(brightness);
+            });
+        }
+        
+        if (overlayDecreaseBtn) {
+            overlayDecreaseBtn.addEventListener('click', () => {
+                // Toggle between preset brightness levels
+                const currentBrightness = this.settings.overlayBrightness;
+                let newBrightness;
+                
+                if (currentBrightness >= 75) {
+                    newBrightness = 50;
+                } else if (currentBrightness >= 50) {
+                    newBrightness = 25;
+                } else if (currentBrightness >= 25) {
+                    newBrightness = 0;
+                } else {
+                    newBrightness = 100;
+                }
+                
+                this.set('overlayBrightness', newBrightness);
+                overlaySlider.value = newBrightness;
+                overlayDisplay.textContent = `${newBrightness}%`;
+                this.updateOverlayBrightness(newBrightness);
             });
         }
         

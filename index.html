@@ -59,6 +59,20 @@
                 </div>
             </div>
             
+            <!-- Visual Settings -->
+            <div class="settings-section">
+                <h3>🎨 Visual</h3>
+                <div class="settings-group">
+                    <label>Video Overlay Brightness:</label>
+                    <div class="volume-control-inline">
+                        <button id="overlay-brightness-decrease">🌑</button>
+                        <input type="range" id="overlay-brightness-slider" min="0" max="100" value="75">
+                        <span id="overlay-brightness-display">75%</span>
+                    </div>
+                    <small style="color: #aaa;">Lower values make video brighter</small>
+                </div>
+            </div>
+            
             <button id="close-settings" class="modal-btn">Close</button>
         </div>
     </div>
@@ -226,7 +240,7 @@
 
     <!-- Scripts -->
     <script src="version-check.js?v=1.3.2"></script>
-    <script src="settings.js?v=1.3.1"></script>
+    <script src="settings.js?v=1.3.2"></script>
     <script src="audio.js?v=1.3.2"></script>
     <script src="particles.js?v=1.3.2"></script>
     <script src="controls.js?v=1.3.2"></script>
